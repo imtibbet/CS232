@@ -1,0 +1,17 @@
+Writeup
+
+Create a wiki page with your writeup. For each task, write a short description of the task, in your own words.
+
+Include a description of your top-level design.
+Include the two programs you wrote using the simple instruction set.
+Include a picture of your circuit in simulation.
+Describe the hardware testing you undertook to prove the circuit works.
+Include a description, and pictures, of any extensions.
+
+Extensions
+
+Make longer programs.
+Add instructions to the system. Make branch instructions, for example.
+Add a hold/free button to the display.
+Add a button that lets you speed up or slow down the display.
+Be creative.
