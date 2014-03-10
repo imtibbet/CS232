@@ -42,6 +42,7 @@ begin
 --data <=
 ----init
 --	"0000" when addr = "000000" else -- move 0s to LR
+----CS232
 ----C
 --	"1000" when addr = "000001" else -- shift LR left, pushing a 1 on right
 --	"1000" when addr = "000010" else -- shift LR left, pushing a 1 on right
