@@ -28,3 +28,5 @@ Project 4: Programmable Lights
 
 We created a programmable light display using VHDL that can use up to 16 instruction codes and 64 total instructions. It uses the 8 green LED lights as the display and the 10 red LED lights to show what the state machine driving the programmable display is doing. The state machine is our top level design with an instance of lightrom, which specifies the program that will run as the top level increments.
 
+Extensions:
+We created a hold/free switch by adding a simple flag at the top of the program run code that stops it from running while the hold switch is on. We also created a button that changes the speed at which the program runs by cycling through the top 10 bits of the counter used to slow the clock. The highest bit is the slowest possible speed and the lowest selectable bit is the highest possible speed. By implementing the speed button in it’s own process we were able to use the falling_edge command so it only changes the bit by one each time pushed.
