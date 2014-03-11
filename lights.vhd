@@ -1,4 +1,4 @@
-- Quartus II VHDL Template
+-- Quartus II VHDL Template
 -- Four-State Moore State Machine
 
 -- A Moore machine's outputs are dependent only on the current state.
