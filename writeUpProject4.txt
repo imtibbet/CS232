@@ -3,9 +3,17 @@ Writeup
 Create a wiki page with your writeup. For each task, write a short description of the task, in your own words.
 
 Include a description of your top-level design.
+We have a state machine as our top level design that has an instance of lightrom, which specifies the program that will run as the top level increments.
+
 Include the two programs you wrote using the simple instruction set.
+I can put the source code in when we transfer this to the wiki.
+
 Include a picture of your circuit in simulation.
+Done, already in the wiki.
+
 Describe the hardware testing you undertook to prove the circuit works.
+We ran it and verified that the program described by the lightrom corresponded to the lights on the board for the lights, the IR and the PC.
+
 Include a description, and pictures, of any extensions.
 
 Extensions
