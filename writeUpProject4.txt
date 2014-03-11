@@ -23,3 +23,7 @@ Add instructions to the system. Make branch instructions, for example.
 Add a hold/free button to the display.
 Add a button that lets you speed up or slow down the display.
 Be creative.
+
+Project 4: Programmable Lights
+
+We created a programmable light display using VHDL that can use up to 16 instruction codes and 64 total instructions. It uses the 8 green LED lights as the display and the 10 red LED lights to show what the state machine driving the programmable display is doing.
