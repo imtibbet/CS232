@@ -3,7 +3,7 @@ Writeup
 Create a wiki page with your writeup. For each task, write a short description of the task, in your own words.
 
 Include a description of your top-level design.
-We have a state machine as our top level design that has an instance of lightrom, which specifies the program that will run as the top level increments.
+
 
 Include the two programs you wrote using the simple instruction set.
 I can put the source code in when we transfer this to the wiki.
@@ -26,4 +26,5 @@ Be creative.
 
 Project 4: Programmable Lights
 
-We created a programmable light display using VHDL that can use up to 16 instruction codes and 64 total instructions. It uses the 8 green LED lights as the display and the 10 red LED lights to show what the state machine driving the programmable display is doing.
+We created a programmable light display using VHDL that can use up to 16 instruction codes and 64 total instructions. It uses the 8 green LED lights as the display and the 10 red LED lights to show what the state machine driving the programmable display is doing. The state machine is our top level design with an instance of lightrom, which specifies the program that will run as the top level increments.
+
