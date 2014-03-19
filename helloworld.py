@@ -1,5 +1,20 @@
 '''
 Created on Feb 7, 2014
+top_half_on
+top_half_off
+bottom_half_on
+bottom_half_off
+
+rotate_right
+rotate_left
+bottom_half_rotate_right
+bottom_half_rotate_left
+
+shift_left
+shift_right
+bottom_half_shift_left
+bottom_half_shift_right
+
 
 @author: tibbi_000
 '''
@@ -18,9 +33,9 @@ class myCompiler:
     
         self.keywordDefinitions = ("keywords:\n" +
                                    "Do_# - begin a loop that iterates # times\n" +
+                                   "Loop - end a loop\n" +
                                    "On - turn all 8 lights on\n" +
-                                   "Off - turn all 8 lights off\n" +
-                                   "Loop - end a loop\n")
+                                   "Off - turn all 8 lights off\n")
         
         self.errorMessage = ""
         self.startLoopAddr = 0
@@ -55,10 +70,6 @@ class myCompiler:
         if word.split("_")[0] == "DO":
             instructions += self.storeLoopCount()
             self.startLoopAddr = self.address
-        elif word == "ON":
-            instrList += ["\"0000000000\""]
-        elif word == "OFF":
-            instrList += ["\"0000000000\""]
         elif word == "LOOP":
             instructions += self.subOneFromLOOP()
             branchZWhenAddr = self.getNewAddress()
@@ -74,6 +85,12 @@ class myCompiler:
                              branchUWhenAddr +
                              "\" else -- " +
                              "branch unconditional to top of loop otherwise\n")
+        elif word == "ON":
+            instrList += ["\"0001110000\""]
+        elif word == "OFF":
+            instrList += ["\"0000110000\""]
+            instrList += ["\"0110011000\""]
+            instrList += ["\"0001000000\""]
         else:
             return ("\"0000000000\"; \n")
         for instr in instrList:
@@ -94,24 +111,24 @@ class myCompiler:
                 else:
                     self.errorMessage = ("Error: DO_# - Do must have number with an _")
                     curState = self.state.ERROR
+            elif word == "LOOP":
+                self.errorMessage = ("Error: \"Loop\" without \"Do\"")
+                curState = self.state.ERROR
             elif word == "ON":
                 curState = self.state.START
             elif word == "OFF":
                 curState = self.state.START
-            elif word == "LOOP":
-                self.errorMessage = ("Error: \"Loop\" without \"Do\"")
-                curState = self.state.ERROR
             else:
                 self.errorMessage = ("Error: word \"{}\" not recognized" + 
-                                " only use {}"
-                                ).format(word,
-                                         self.keywordDefinitions)
+                                     " only use {}"
+                                      ).format(word,
+                                               self.keywordDefinitions)
                 curState = self.state.ERROR
                 
         elif curState == self.state.LOOP:
             if word.split("_")[0] == "DO":
                 self.errorMessage = ("Error: \"Do\" inside loop.\n" +
-                                " do note support nested loops.")
+                                     " do note support nested loops.")
                 curState = self.state.ERROR
             elif word == "ON":
                 curState = self.state.LOOP
@@ -121,9 +138,9 @@ class myCompiler:
                 curState = self.state.START
             else:
                 self.errorMessage = ("Error: word \"{}\" not recognized" + 
-                                " only use {}"
-                                ).format(word,
-                                         self.keywordDefinitions)
+                                     " only use {}"
+                                     ).format(word,
+                                              self.keywordDefinitions)
                 curState = self.state.ERROR
         else: #state.ERROR
             curState = self.state.ERROR
@@ -214,7 +231,23 @@ if __name__ == "__main__":
         outputStr = "-- Ian Tibbetts and Ryan Newell\n"
         outputStr += "-- Project 5 Generated ROM\n"
         outputStr += "-- Due: Mar 21, 2014\n"
+        outputStr += "library ieee;\n"
+        outputStr += "use ieee.std_logic_1164.all;\n"
+        outputStr += "use ieee.numeric_std.all;\n"
+        outputStr += "\n"
+        outputStr += "entity outputROM is\n"
+        outputStr += "  port (\n"
+        outputStr += "    addr : in std_logic_vector (7 downto 0);\n"
+        outputStr += "    data : out std_logic_vector (9 downto 0));\n"
+        outputStr += "end entity;\n"
+        outputStr += "\n"
+        outputStr += "architecture rtl of outputROM is\n"
+        outputStr += "\n"
+        outputStr += "begin\n"
+        outputStr += "\n"
         outputStr += myC.parseSource(sourceText)
+        outputStr += "\n"
+        outputStr += "end rtl;\n"
         if not outputStr: #empty string
             print("Error occurred: {}".format(myC.errorMessage))
         else:
