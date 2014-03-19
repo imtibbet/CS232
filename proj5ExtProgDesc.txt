@@ -1,3 +1,11 @@
+on
+shift_left
+shift_left
+rotate_right
+shift_left
+shift_right
+rotate_left
+off
 Do_8
 on
 off

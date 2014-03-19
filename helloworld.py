@@ -30,12 +30,18 @@ class myCompiler:
         self.state = enum("START",
                           "LOOP",
                           "ERROR")
-    
+        
+        self.keywords = ["ON","OFF","SHIFT_LEFT","SHIFT_RIGHT",
+                         "ROTATE_LEFT","ROTATE_RIGHT"]
         self.keywordDefinitions = ("keywords:\n" +
                                    "Do_# - begin a loop that iterates # times\n" +
                                    "Loop - end a loop\n" +
                                    "On - turn all 8 lights on\n" +
-                                   "Off - turn all 8 lights off\n")
+                                   "Off - turn all 8 lights off\n" +
+                                   "Shift_Left - shift 8 lights left by one\n" +
+                                   "Shift_Right - shift 8 lights right by one\n" +
+                                   "Rotate_Left - rotate rightmost of 8 lights to the leftmost\n" +
+                                   "Rotate_Right - rotate leftmost of 8 lights to the rightmost\n")
         
         self.errorMessage = ""
         self.startLoopAddr = 0
@@ -91,6 +97,22 @@ class myCompiler:
             instrList += ["\"0000110000\""]
             instrList += ["\"0110011000\""]
             instrList += ["\"0001000000\""]
+        elif word == "SHIFT_LEFT":
+            instrList += ["\"0000010000\""]
+            instrList += ["\"0101000000\""]
+            instrList += ["\"0001000000\""]
+        elif word == "SHIFT_RIGHT":
+            instrList += ["\"0000010000\""]
+            instrList += ["\"0101100000\""]
+            instrList += ["\"0001000000\""]
+        elif word == "ROTATE_LEFT":
+            instrList += ["\"0000010000\""]
+            instrList += ["\"0111000000\""]
+            instrList += ["\"0001000000\""]
+        elif word == "ROTATE_RIGHT":
+            instrList += ["\"0000010000\""]
+            instrList += ["\"0111100000\""]
+            instrList += ["\"0001000000\""]
         else:
             return ("\"0000000000\"; \n")
         for instr in instrList:
@@ -109,18 +131,16 @@ class myCompiler:
                     self.loopCount = int(word.split("_")[-1])
                     curState = self.state.LOOP
                 else:
-                    self.errorMessage = ("Error: DO_# - Do must have number with an _")
+                    self.errorMessage += ("Error: DO_# - Do must have number with an _\n")
                     curState = self.state.ERROR
             elif word == "LOOP":
-                self.errorMessage = ("Error: \"Loop\" without \"Do\"")
+                self.errorMessage += ("Error: \"Loop\" without \"Do\"\n")
                 curState = self.state.ERROR
-            elif word == "ON":
-                curState = self.state.START
-            elif word == "OFF":
+            elif self.keywords.count(word):
                 curState = self.state.START
             else:
-                self.errorMessage = ("Error: word \"{}\" not recognized" + 
-                                     " only use {}"
+                self.errorMessage += ("Error: word \"{}\" not recognized" + 
+                                     " only use {}\n"
                                       ).format(word,
                                                self.keywordDefinitions)
                 curState = self.state.ERROR
@@ -128,17 +148,15 @@ class myCompiler:
         elif curState == self.state.LOOP:
             if word.split("_")[0] == "DO":
                 self.errorMessage = ("Error: \"Do\" inside loop.\n" +
-                                     " do note support nested loops.")
+                                     " do note support nested loops.\n")
                 curState = self.state.ERROR
-            elif word == "ON":
-                curState = self.state.LOOP
-            elif word == "OFF":
-                curState = self.state.LOOP
             elif word == "LOOP":
                 curState = self.state.START
+            elif self.keywords.count(word):
+                curState = self.state.LOOP
             else:
-                self.errorMessage = ("Error: word \"{}\" not recognized" + 
-                                     " only use {}"
+                self.errorMessage += ("Error: word \"{}\" not recognized" + 
+                                     " only use {}\n"
                                      ).format(word,
                                               self.keywordDefinitions)
                 curState = self.state.ERROR
@@ -161,7 +179,7 @@ class myCompiler:
         if self.loopCount < 128:
             tmpInstrList += self.shiftLOOPLeft()
         else:
-            print("Error: can't have loop greater than 127.\n")
+            self.errorMessage += ("Error: can't have loop greater than 127.\n")
         for powerOfTwo in powerOfTwoList:
             if self.loopCount < powerOfTwo:
                 tmpInstrList += self.shiftLOOPLeft()
@@ -195,8 +213,8 @@ class myCompiler:
     def getNewAddress(self):
         newAddr = "{0:b}".format(self.address)
         if len(newAddr) > self.addrLength:
-            print("Error: address exceeds give address length" +
-                  " of {}".format(self.addrLength))
+            self.errorMessage += ("Error: new address exceeds give address length" +
+                                  " of {}\n".format(self.addrLength))
         while len(newAddr) < self.addrLength:
             newAddr = "0" + newAddr
         self.address += 1
@@ -205,8 +223,8 @@ class myCompiler:
     def getStartLoopAddr(self):
         startAddr = "{0:b}".format(self.startLoopAddr)
         if len(startAddr) > self.addrLength:
-            print("Error: address exceeds give address length" +
-                  " of {}".format(self.addrLength))
+            self.errorMessage += ("Error: start address exceeds give address length" +
+                                  " of {}\n".format(self.addrLength))
         while len(startAddr) < self.addrLength:
             startAddr = "0" + startAddr
         self.address += 1
@@ -228,6 +246,7 @@ if __name__ == "__main__":
         sourceFile.close()
         print("Input File Contents:\n" + sourceText)
         print(sourceText.split())
+        
         outputStr = "-- Ian Tibbetts and Ryan Newell\n"
         outputStr += "-- Project 5 Generated ROM\n"
         outputStr += "-- Due: Mar 21, 2014\n"
@@ -248,8 +267,9 @@ if __name__ == "__main__":
         outputStr += myC.parseSource(sourceText)
         outputStr += "\n"
         outputStr += "end rtl;\n"
-        if not outputStr: #empty string
-            print("Error occurred: {}".format(myC.errorMessage))
+        if myC.errorMessage:#if there is an error string
+            print(outputStr)
+            print("Error(s) occurred:\n{}".format(myC.errorMessage))
         else:
             print(outputStr)
             if len(sys.argv) == 2:
