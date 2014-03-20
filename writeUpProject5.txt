@@ -1,19 +1,32 @@
 h1. Programmable Lights II
 
 h3. Write Up
-# Include a description of your top-level design.
-# Include the two programs you wrote.
-# Include the picture of your simulation of your favorite program.
+
+# *{+}Include a description of your top-level design.+*
+# *{+}Include the two programs you wrote.+*
+# *{+}Include the picture of your simulation of your favorite program.+*
 
 h3. Hardware Testing:
 
 h3. Extensions:
 
-# Make longer programs (make the ROM bigger).
-# Write more programs.
-# Write a simple assembler (in python, for example) that converts instructions from a simple, human readable language, into the set of machine instructions for your pldrom.
-# Add a hold/freeze button to the display.
-# Add one or more switches/buttons that let you speed up or slow down the clock.
+# *{+}Make longer programs (make the ROM bigger).+*
+# *{+}Write more programs.+*
+# *{+}Write a simple assembler (in python, for example) that converts instructions from a simple, human readable language, into the set of machine instructions for your pldrom.+*
+Maybe not so simple, but our vhdlCompiler.py does allow the user to provide english instructions (from a list of valid keywords we define) for a program in an input file, pass that input file to the python on the command line (and optionally specify an output file on the command line as well), which writes vhdl code to the output file for the program described. Our keywords are:
+## Do_# - begin a loop that iterates # times
+## Loop - end a loop
+## Set_######## - sets each of the 8 lights to their #, either 1 or 0
+## On - turn all 8 lights on
+## Off - turn all 8 lights off
+## Shift_Left - shift 8 lights left by one
+## Shift_Right - shift 8 lights right by one
+## Rotate_Left - rotate rightmost of 8 lights to the leftmost
+## Rotate_Right - rotate leftmost of 8 lights to the rightmost
+## Invert - flip all on lights to off and visa versa
+
+# *{+}Add a hold/freeze button to the display.+*
+# *{+}Add one or more switches/buttons that let you speed up or slow down the clock.+*
 
 {code:title=vhdlCompiler.py|borderStyle=solid}
 
