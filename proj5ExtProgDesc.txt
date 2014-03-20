@@ -1,9 +1,5 @@
 on
-invert
-invert
-off
-set_10101111
-Do_8
-on
-off
+shift_left
+Do_20
+rotate_left
 Loop

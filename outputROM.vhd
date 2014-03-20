@@ -17,37 +17,23 @@ begin
 
 data <= 
 -- ON
-"0001110000" when addr = "00000000" else -- ON
--- INVERT
-"0000010000" when addr = "00000001" else -- INVERT
-"0110011000" when addr = "00000010" else -- INVERT
-"0001000000" when addr = "00000011" else -- INVERT
--- INVERT
-"0000010000" when addr = "00000100" else -- INVERT
-"0110011000" when addr = "00000101" else -- INVERT
-"0001000000" when addr = "00000110" else -- INVERT
--- OFF
-"0000110000" when addr = "00000111" else -- OFF
-"0110011000" when addr = "00001000" else -- OFF
-"0001000000" when addr = "00001001" else -- OFF
--- SET_10101111
-"0010101111" when addr = "00001010" else -- SET_10101111
-"0011101010" when addr = "00001011" else -- SET_10101111
-"0001000000" when addr = "00001100" else -- SET_10101111
--- DO_8
-"0010101000" when addr = "00001101" else -- DO_8
-"0011100000" when addr = "00001110" else -- DO_8
-"0110000100" when addr = "00001111" else -- DO_8
--- ON
-"0001110000" when addr = "00010000" else -- ON
--- OFF
-"0000110000" when addr = "00010001" else -- OFF
-"0110011000" when addr = "00010010" else -- OFF
-"0001000000" when addr = "00010011" else -- OFF
+"0001110000" when addr = "00000000" else -- move all 1's into LR
+-- SHIFT_LEFT
+"0000010000" when addr = "00000001" else -- move LR to ACC
+"0101000000" when addr = "00000010" else -- shift ACC left
+"0001000000" when addr = "00000011" else -- move ACC to LR
+-- DO_20
+"0010100100" when addr = "00000100" else -- set low 4 bits of ACC
+"0011100001" when addr = "00000101" else -- set high 4 bits of ACC
+"0110000100" when addr = "00000110" else -- move ACC into LOOP
+-- ROTATE_LEFT
+"0000010000" when addr = "00000111" else -- move LR to ACC
+"0111000000" when addr = "00001000" else -- rotate ACC left
+"0001000000" when addr = "00001001" else -- move ACC to LR
 -- LOOP
-"0100110101" when addr = "00010100" else -- decrement loop register by 1
-"1100010111" when addr = "00010101" else -- break when LOOP is zero
-"1000010000" when addr = "00010110" else -- branch unconditional to top of loop otherwise
-"1000000000"; 
+"0100110101" when addr = "00001010" else -- decrement loop register by 1
+"1100001101" when addr = "00001011" else -- break when LOOP is zero
+"1000000111" when addr = "00001100" else -- branch unconditional to top of loop otherwise
+"1000000000"; -- branch to beginning when no more instructions
 
 end rtl;

@@ -1,20 +1,7 @@
 '''
-Created on Feb 7, 2014
-top_half_on
-top_half_off
-bottom_half_on
-bottom_half_off
-
-rotate_right
-rotate_left
-bottom_half_rotate_right
-bottom_half_rotate_left
-
-shift_left
-shift_right
-bottom_half_shift_left
-bottom_half_shift_right
-@author: tibbi_000
+CS232 Project 5 extension
+Due on Mar 21, 2014
+@author: Ian Tibbetts and Ryan Newell
 '''
 import sys
 #found this implementation at 
@@ -34,6 +21,7 @@ class myCompiler:
         self.keywordDefinitions = ("keywords:\n" +
                                    "Do_# - begin a loop that iterates # times\n" +
                                    "Loop - end a loop\n" +
+                                   "Set_######## - sets each of the 8 lights to their #, either 1 or 0.\n" +
                                    "On - turn all 8 lights on\n" +
                                    "Off - turn all 8 lights off\n" +
                                    "Shift_Left - shift 8 lights left by one\n" +
@@ -79,9 +67,9 @@ class myCompiler:
                                       " of {}\n".format(self.addrLength))
             while len(loopCountStr) < self.addrLength:
                 loopCountStr = "0" + loopCountStr
-            instrList += ["\"001010" + loopCountStr[4:8] + "\""]
-            instrList += ["\"001110" + loopCountStr[0:4] + "\""]
-            instrList += ["\"0110000100\""]
+            instrList += [["\"001010" + loopCountStr[4:8] + "\"","set low 4 bits of ACC"]]
+            instrList += [["\"001110" + loopCountStr[0:4] + "\"","set high 4 bits of ACC"]]
+            instrList += [["\"0110000100\"","move ACC into LOOP"]]
         elif word == "LOOP":
             instructions += self.subOneFromLOOP()
             branchZWhenAddr = self.getNewAddress()
@@ -98,44 +86,44 @@ class myCompiler:
                              "\" else -- " +
                              "branch unconditional to top of loop otherwise\n")
         elif word == "ON":
-            instrList += ["\"0001110000\""]
+            instrList += [["\"0001110000\"","move all 1's into LR"]]
         elif word == "OFF":
-            instrList += ["\"0000110000\""]
-            instrList += ["\"0110011000\""]
-            instrList += ["\"0001000000\""]
+            instrList += [["\"0000110000\"","move all 1's to ACC"]]
+            instrList += [["\"0110011000\"","xor ACC with all 1's"]]
+            instrList += [["\"0001000000\"","move ACC to LR"]]
         elif word == "SHIFT_LEFT":
-            instrList += ["\"0000010000\""]
-            instrList += ["\"0101000000\""]
-            instrList += ["\"0001000000\""]
-        elif word == "SHIFT_RIGHT":
-            instrList += ["\"0000010000\""]
-            instrList += ["\"0101100000\""]
-            instrList += ["\"0001000000\""]
+            instrList += [["\"0000010000\"","move LR to ACC"]]
+            instrList += [["\"0101000000\"","shift ACC left"]]
+            instrList += [["\"0001000000\"","move ACC to LR"]]
+        elif word == "SHIF[T_RIGHT":
+            instrList += [["\"0000010000\"","move LR to ACC"]]
+            instrList += [["\"0101100000\"","shift ACC right"]]
+            instrList += [["\"0001000000\"","move ACC to LR"]]
         elif word == "ROTATE_LEFT":
-            instrList += ["\"0000010000\""]
-            instrList += ["\"0111000000\""]
-            instrList += ["\"0001000000\""]
+            instrList += [["\"0000010000\"","move LR to ACC"]]
+            instrList += [["\"0111000000\"","rotate ACC left"]]
+            instrList += [["\"0001000000\"","move ACC to LR"]]
         elif word == "ROTATE_RIGHT":
-            instrList += ["\"0000010000\""]
-            instrList += ["\"0111100000\""]
-            instrList += ["\"0001000000\""]
+            instrList += [["\"0000010000\"","move LR to ACC"]]
+            instrList += [["\"0111100000\"","rotate ACC right"]]
+            instrList += [["\"0001000000\"","move ACC to LR"]]
         elif word == "INVERT":
-            instrList += ["\"0000010000\""]
-            instrList += ["\"0110011000\""]
-            instrList += ["\"0001000000\""]
+            instrList += [["\"0000010000\"","move LR to ACC"]]
+            instrList += [["\"0110011000\"","xor ACC with all 1's"]]
+            instrList += [["\"0001000000\"","move ACC to LR"]]
         elif word.split("_")[0] == "SET":
-            instrList += ["\"001010" + self.setBits[4:8] + "\""]
-            instrList += ["\"001110" + self.setBits[0:4] + "\""]
-            instrList += ["\"0001000000\""]
+            instrList += [["\"001010" + self.setBits[4:8] + "\"","set low 4 bits of ACC"]]
+            instrList += [["\"001110" + self.setBits[0:4] + "\"","set high 4 bits of ACC"]]
+            instrList += [["\"0001000000\"","move ACC to LR"]]
         else:
-            return ("\"1000000000\"; \n")
+            return ("\"1000000000\"; -- branch to beginning when no more instructions\n")
         for instr in instrList:
             newAddr = self.getNewAddress()
-            instructions += (instr + 
+            instructions += (instr[0] + 
                              " when addr = \"" + 
                              newAddr +
-                              "\" else -- " +
-                              word + "\n")
+                             "\" else -- " +
+                             instr[1] + "\n")
         if word.split("_")[0] == "DO":
             self.startLoopAddr = self.address
         return instructions
@@ -216,29 +204,6 @@ class myCompiler:
             return "LOOP"
         else: #ERROR
             return "ERROR"
-   
-    def storeLoopCount(self):
-        tmpInstrList = ""
-        powerOfTwoList = [64,32,16,8,4,2,1]
-        if self.loopCount < 128:
-            tmpInstrList += self.shiftLOOPLeft()
-        else:
-            self.errorMessage += ("Error: can't have loop greater than 127.\n")
-        for powerOfTwo in powerOfTwoList:
-            if self.loopCount < powerOfTwo:
-                tmpInstrList += self.shiftLOOPLeft()
-            else:
-                tmpInstrList += self.shiftLOOPLeft()
-                tmpInstrList += self.addOneToLOOP()
-                self.loopCount -= powerOfTwo
-        return tmpInstrList
-        
-    def shiftLOOPLeft(self):
-        return ("\"0101000100\"" + 
-                " when addr = \"" + 
-                self.getNewAddress() +
-                "\" else -- " +
-                "shift left loop register\n")
         
     def addOneToLOOP(self):
         return ("\"0100010101\"" + 
