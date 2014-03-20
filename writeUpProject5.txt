@@ -13,17 +13,20 @@ h3. Extensions:
 # *{+}Make longer programs (make the ROM bigger).+*
 # *{+}Write more programs.+*
 # *{+}Write a simple assembler (in python, for example) that converts instructions from a simple, human readable language, into the set of machine instructions for your pldrom.+*
+
 Maybe not so simple, but our vhdlCompiler.py does allow the user to provide english instructions (from a list of valid keywords we define) for a program in an input file, pass that input file to the python on the command line (and optionally specify an output file on the command line as well), which writes vhdl code to the output file for the program described. Our keywords are:
-## Do_# - begin a loop that iterates # times
-## Loop - end a loop
-## Set_######## - sets each of the 8 lights to their #, either 1 or 0
-## On - turn all 8 lights on
-## Off - turn all 8 lights off
-## Shift_Left - shift 8 lights left by one
-## Shift_Right - shift 8 lights right by one
-## Rotate_Left - rotate rightmost of 8 lights to the leftmost
-## Rotate_Right - rotate leftmost of 8 lights to the rightmost
-## Invert - flip all on lights to off and visa versa
+* Do_# - begin a loop that iterates # times
+* Loop - end a loop
+* Set_######## - sets each of the 8 lights to their #, either 1 or 0
+* On - turn all 8 lights on
+* Off - turn all 8 lights off
+* Shift_Left - shift 8 lights left by one
+* Shift_Right - shift 8 lights right by one
+* Rotate_Left - rotate rightmost of 8 lights to the leftmost
+* Rotate_Right - rotate leftmost of 8 lights to the rightmost
+* Invert - flip all on lights to off and visa versa
+
+All instructions in this code refer to the light register (LR, the 8 green lights on the board), so none of the internal implementation (ACC, 10 bit instructions, etc) are visible to the user. Instead, the python code handles validating that they use only legal keywords, do not have neted loops, provide loop counts, do not exceed to number of available addresses, etc. By modifying fields this compiler is extensible to different length addresses, but ours assumes 8 bit addresses and therefore restricts the user to less than 128 loop counts. Our modified table, describing how we modified our design to implement a LOOP register and have 8 bit addresses can be found [here|^newSpecProj5PythExt.htm].
 
 # *{+}Add a hold/freeze button to the display.+*
 # *{+}Add one or more switches/buttons that let you speed up or slow down the clock.+*
