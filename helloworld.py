@@ -81,7 +81,6 @@ class myCompiler:
                 loopCountStr = "0" + loopCountStr
             instrList += ["\"001010" + loopCountStr[4:8] + "\""]
             instrList += ["\"001110" + loopCountStr[0:4] + "\""]
-            instrList += ["\"0110011000\""]
             instrList += ["\"0110000100\""]
         elif word == "LOOP":
             instructions += self.subOneFromLOOP()

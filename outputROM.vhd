@@ -37,18 +37,17 @@ data <=
 -- DO_8
 "0010101000" when addr = "00001101" else -- DO_8
 "0011100000" when addr = "00001110" else -- DO_8
-"0110011000" when addr = "00001111" else -- DO_8
-"0110000100" when addr = "00010000" else -- DO_8
+"0110000100" when addr = "00001111" else -- DO_8
 -- ON
-"0001110000" when addr = "00010001" else -- ON
+"0001110000" when addr = "00010000" else -- ON
 -- OFF
-"0000110000" when addr = "00010010" else -- OFF
-"0110011000" when addr = "00010011" else -- OFF
-"0001000000" when addr = "00010100" else -- OFF
+"0000110000" when addr = "00010001" else -- OFF
+"0110011000" when addr = "00010010" else -- OFF
+"0001000000" when addr = "00010011" else -- OFF
 -- LOOP
-"0100110101" when addr = "00010101" else -- decrement loop register by 1
-"1100011000" when addr = "00010110" else -- break when LOOP is zero
-"1000010001" when addr = "00010111" else -- branch unconditional to top of loop otherwise
+"0100110101" when addr = "00010100" else -- decrement loop register by 1
+"1100010111" when addr = "00010101" else -- break when LOOP is zero
+"1000010000" when addr = "00010110" else -- branch unconditional to top of loop otherwise
 "1000000000"; 
 
 end rtl;
