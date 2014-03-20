@@ -10,7 +10,7 @@ def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
     return type('Enum', (), enums)
 
-class myCompiler:
+class vhdlCompiler:
     def __init__(self):
         self.state = enum("START",
                           "LOOP",
@@ -242,12 +242,12 @@ class myCompiler:
 if __name__ == "__main__":
     print(sys.argv)
     print(len(sys.argv))
-    myC = myCompiler()
+    compiler = vhdlCompiler()
     if len(sys.argv) < 2:
         print("usage: expect input file name as command line input.\n" +
               "Output file is an optional second parameter.\n" +
               "Input file should be program instruction written in" +
-              " plain english using {}".format(myC.keywordDefinitions))
+              " plain english using {}".format(compiler.keywordDefinitions))
     else:
         print("input file is " + sys.argv[1])
         sourceFile = open(sys.argv[1], encoding ="utf-8")
@@ -273,12 +273,12 @@ if __name__ == "__main__":
         outputStr += "\n"
         outputStr += "begin\n"
         outputStr += "\n"
-        outputStr += myC.parseSource(sourceText)
+        outputStr += compiler.parseSource(sourceText)
         outputStr += "\n"
         outputStr += "end rtl;\n"
-        if myC.errorMessage:#if there is an error string
+        if compiler.errorMessage:#if there is an error string
             print(outputStr)
-            print("Error(s) occurred:\n{}".format(myC.errorMessage))
+            print("Error(s) occurred:\n{}".format(compiler.errorMessage))
         else:
             print(outputStr)
             if len(sys.argv) == 2:
@@ -294,6 +294,6 @@ if __name__ == "__main__":
                 print("usage: expect input file name as command line input.\n" +
                       "Output file is an optional second parameter.\n" +
                       "Input file should be program instruction written in" +
-                      " plain english using {}").format(myC.keywordDefinitions)
+                      " plain english using {}").format(compiler.keywordDefinitions)
             outputFile.write(outputStr)
             outputFile.close()

@@ -15,6 +15,6 @@ h3. Extensions:
 # Add a hold/freeze button to the display.
 # Add one or more switches/buttons that let you speed up or slow down the clock.
 
-{code:title=helloworld.py|borderStyle=solid}
+{code:title=vhdlCompiler.py|borderStyle=solid}
 
 {code}
