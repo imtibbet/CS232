@@ -1,11 +1,8 @@
 on
-shift_left
-shift_left
-rotate_right
-shift_left
-shift_right
-rotate_left
+invert
+invert
 off
+set_10101111
 Do_8
 on
 off

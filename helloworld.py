@@ -14,8 +14,6 @@ shift_left
 shift_right
 bottom_half_shift_left
 bottom_half_shift_right
-
-
 @author: tibbi_000
 '''
 import sys
@@ -32,7 +30,7 @@ class myCompiler:
                           "ERROR")
         
         self.keywords = ["ON","OFF","SHIFT_LEFT","SHIFT_RIGHT",
-                         "ROTATE_LEFT","ROTATE_RIGHT"]
+                         "ROTATE_LEFT","ROTATE_RIGHT","INVERT"]
         self.keywordDefinitions = ("keywords:\n" +
                                    "Do_# - begin a loop that iterates # times\n" +
                                    "Loop - end a loop\n" +
@@ -41,8 +39,9 @@ class myCompiler:
                                    "Shift_Left - shift 8 lights left by one\n" +
                                    "Shift_Right - shift 8 lights right by one\n" +
                                    "Rotate_Left - rotate rightmost of 8 lights to the leftmost\n" +
-                                   "Rotate_Right - rotate leftmost of 8 lights to the rightmost\n")
-        
+                                   "Rotate_Right - rotate leftmost of 8 lights to the rightmost\n" +
+                                   "Invert - flip all on lights to off and visa versa")
+        self.setBits = ""
         self.errorMessage = ""
         self.startLoopAddr = 0
         self.address = 0
@@ -113,8 +112,16 @@ class myCompiler:
             instrList += ["\"0000010000\""]
             instrList += ["\"0111100000\""]
             instrList += ["\"0001000000\""]
+        elif word == "INVERT":
+            instrList += ["\"0000010000\""]
+            instrList += ["\"0110011000\""]
+            instrList += ["\"0001000000\""]
+        elif word.split("_")[0] == "SET":
+            instrList += ["\"001010" + self.setBits[4:8] + "\""]
+            instrList += ["\"001110" + self.setBits[0:4] + "\""]
+            instrList += ["\"0001000000\""]
         else:
-            return ("\"0000000000\"; \n")
+            return ("\"1000000000\"; \n")
         for instr in instrList:
             newAddr = self.getNewAddress()
             instructions += (instr + 
@@ -131,16 +138,30 @@ class myCompiler:
                     self.loopCount = int(word.split("_")[-1])
                     curState = self.state.LOOP
                 else:
-                    self.errorMessage += ("Error: DO_# - Do must have number with an _\n")
+                    self.errorMessage += ("Error: DO_# - Do must have number after an _\n")
                     curState = self.state.ERROR
             elif word == "LOOP":
                 self.errorMessage += ("Error: \"Loop\" without \"Do\"\n")
                 curState = self.state.ERROR
+            elif word.split("_")[0] == "SET":
+                if word.split("_")[-1].isdigit():
+                    bitCount = 0
+                    for bit in word.split("_")[-1]:
+                        if not(bit == "0" or bit == "1"):
+                            self.errorMessage += ("Error: SET_######## - bit {} is invalid\n".format(bit))
+                        bitCount += 1
+                    if bitCount != 8:
+                        self.errorMessage += ("Error: SET_######## - Do must 8 0's or 1's after an _\n")
+                    self.setBits = word.split("_")[-1]
+                    curState = self.state.START
+                else:
+                    self.errorMessage += ("Error: SET_######## - Do must 8 0's or 1's after an _\n")
+                    curState = self.state.ERROR
             elif self.keywords.count(word):
                 curState = self.state.START
             else:
                 self.errorMessage += ("Error: word \"{}\" not recognized" + 
-                                     " only use {}\n"
+                                      " only use {}\n"
                                       ).format(word,
                                                self.keywordDefinitions)
                 curState = self.state.ERROR
@@ -152,12 +173,26 @@ class myCompiler:
                 curState = self.state.ERROR
             elif word == "LOOP":
                 curState = self.state.START
+            elif word.split("_")[0] == "SET":
+                if word.split("_")[-1].isdigit():
+                    bitCount = 0
+                    for bit in word.split("_")[-1]:
+                        if not(bit == "0" or bit == "1"):
+                            self.errorMessage += ("Error: SET_######## - bit {} is invalid\n".format(bit))
+                        bitCount += 1
+                    if bitCount != 8:
+                        self.errorMessage += ("Error: SET_######## - Do must 8 0's or 1's after an _\n")
+                    self.setBits = word.split("_")[-1]
+                    curState = self.state.LOOP
+                else:
+                    self.errorMessage += ("Error: SET_######## - Do must 8 0's or 1's after an _\n")
+                    curState = self.state.ERROR
             elif self.keywords.count(word):
                 curState = self.state.LOOP
             else:
                 self.errorMessage += ("Error: word \"{}\" not recognized" + 
-                                     " only use {}\n"
-                                     ).format(word,
+                                      " only use {}\n"
+                                      ).format(word,
                                               self.keywordDefinitions)
                 curState = self.state.ERROR
         else: #state.ERROR
