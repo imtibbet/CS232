@@ -85,7 +85,7 @@ class myCompiler:
                              branchZWhenAddr +
                              "\" else -- " +
                              "break when LOOP is zero\n")
-            instructions += ("\"00" + self.getStartLoopAddr() + "\""
+            instructions += ("\"10" + self.getStartLoopAddr() + "\""
                              " when addr = \"" + 
                              branchUWhenAddr +
                              "\" else -- " +

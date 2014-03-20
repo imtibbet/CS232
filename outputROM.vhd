@@ -53,7 +53,7 @@ data <=
 -- LOOP
 "0100110101" when addr = "00011010" else -- decrement loop register by 1
 "1100011101" when addr = "00011011" else -- break when LOOP is zero
-"0000010110" when addr = "00011100" else -- branch unconditional to top of loop otherwise
+"1000010110" when addr = "00011100" else -- branch unconditional to top of loop otherwise
 "1000000000"; 
 
 end rtl;
