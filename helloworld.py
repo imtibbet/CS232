@@ -73,8 +73,16 @@ class myCompiler:
         instrList = []
         instructions = "-- " + word + "\n"
         if word.split("_")[0] == "DO":
-            instructions += self.storeLoopCount()
-            self.startLoopAddr = self.address
+            loopCountStr = "{0:b}".format(self.loopCount)
+            if len(loopCountStr) > self.addrLength:
+                self.errorMessage += ("Error: new address exceeds give address length" +
+                                      " of {}\n".format(self.addrLength))
+            while len(loopCountStr) < self.addrLength:
+                loopCountStr = "0" + loopCountStr
+            instrList += ["\"001010" + loopCountStr[4:8] + "\""]
+            instrList += ["\"001110" + loopCountStr[0:4] + "\""]
+            instrList += ["\"0110011000\""]
+            instrList += ["\"0110000100\""]
         elif word == "LOOP":
             instructions += self.subOneFromLOOP()
             branchZWhenAddr = self.getNewAddress()
@@ -129,6 +137,8 @@ class myCompiler:
                              newAddr +
                               "\" else -- " +
                               word + "\n")
+        if word.split("_")[0] == "DO":
+            self.startLoopAddr = self.address
         return instructions
     
     def getNextState(self,word, curState):

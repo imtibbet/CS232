@@ -35,25 +35,20 @@ data <=
 "0011101010" when addr = "00001011" else -- SET_10101111
 "0001000000" when addr = "00001100" else -- SET_10101111
 -- DO_8
-"0101000100" when addr = "00001101" else -- shift left loop register
-"0101000100" when addr = "00001110" else -- shift left loop register
-"0101000100" when addr = "00001111" else -- shift left loop register
-"0101000100" when addr = "00010000" else -- shift left loop register
-"0101000100" when addr = "00010001" else -- shift left loop register
-"0100010101" when addr = "00010010" else -- increment loop register by 1
-"0101000100" when addr = "00010011" else -- shift left loop register
-"0101000100" when addr = "00010100" else -- shift left loop register
-"0101000100" when addr = "00010101" else -- shift left loop register
+"0010101000" when addr = "00001101" else -- DO_8
+"0011100000" when addr = "00001110" else -- DO_8
+"0110011000" when addr = "00001111" else -- DO_8
+"0110000100" when addr = "00010000" else -- DO_8
 -- ON
-"0001110000" when addr = "00010110" else -- ON
+"0001110000" when addr = "00010001" else -- ON
 -- OFF
-"0000110000" when addr = "00010111" else -- OFF
-"0110011000" when addr = "00011000" else -- OFF
-"0001000000" when addr = "00011001" else -- OFF
+"0000110000" when addr = "00010010" else -- OFF
+"0110011000" when addr = "00010011" else -- OFF
+"0001000000" when addr = "00010100" else -- OFF
 -- LOOP
-"0100110101" when addr = "00011010" else -- decrement loop register by 1
-"1100011101" when addr = "00011011" else -- break when LOOP is zero
-"1000010110" when addr = "00011100" else -- branch unconditional to top of loop otherwise
+"0100110101" when addr = "00010101" else -- decrement loop register by 1
+"1100011000" when addr = "00010110" else -- break when LOOP is zero
+"1000010001" when addr = "00010111" else -- branch unconditional to top of loop otherwise
 "1000000000"; 
 
 end rtl;
