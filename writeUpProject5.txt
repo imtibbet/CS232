@@ -1,0 +1,20 @@
+h1. Programmable Lights II
+
+h3. Write Up
+# Include a description of your top-level design.
+# Include the two programs you wrote.
+# Include the picture of your simulation of your favorite program.
+
+h3. Hardware Testing:
+
+h3. Extensions:
+
+# Make longer programs (make the ROM bigger).
+# Write more programs.
+# Write a simple assembler (in python, for example) that converts instructions from a simple, human readable language, into the set of machine instructions for your pldrom.
+# Add a hold/freeze button to the display.
+# Add one or more switches/buttons that let you speed up or slow down the clock.
+
+{code:title=helloworld.py|borderStyle=solid}
+
+{code}
