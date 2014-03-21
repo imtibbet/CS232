@@ -3,16 +3,18 @@ h1. Programmable Lights II
 h3. Write Up
 
 h5. Include a description of your top-level design.
-
+The top-level design we implemented for this project was very similar to the first programmable light project with a Moore state machine being implemented in VHDL. This time though we have 3 states, sFetch, sExecute1, and sExecute2. Having two separate execute states allows a value to be loaded into the SRC register first before being operated on and putting the output into a destination register. This project was really about implementing more functions necessary for true computer. Instead of just changing around the bits in the light register, we can now perform binary operations on those bits, move data between registers, and branch to instructions both conditionally and unconditionally. The state machine does function very similarly to before with case statements for each of the different op codes and nested case statements for individual cases.  
 h5. Include the two programs you wrote.
 
 h5. Include the picture of your simulation of your favorite program.
 
 h3. Hardware Testing:
+After getting our code to compile we attempted to simulate a program, but ran into problems so we went straight to the board. Also running into issues here with our program not functioning as desired, we used the red lights to display the address and the first 5 bits of the ACC just to check what was going wrong. This helped us identify a few minor problems in the code (such as using the wrong bits for the destination) that quickly sorted out our program. From here the majority of Ian’s time was spent implementing the python extension that parses a text input into a set of instructions for our computer. Ryan then helped mesh these slight changes into the programmable lights program and troubleshoot errors in the created instructions. 
 
 h3. Extensions:
 
 h5. Make longer programs (make the ROM bigger).
+We accomplished this by utilizing a specific loop register so the conditional branch always checks if the loop register is zero. This allows us to use all 8 bits after the op code for the branching instructions as address bits.
 
 h5. Write more programs.
 
@@ -108,6 +110,7 @@ The method that does most of the vhdl composition work is given in the code snip
 {code}
 
 h5. Add a hold/freeze button to the display.
+We simply kept the hold switch we had implemented last time by having a flag on the process containing the state machine that stops it from running if the hold switch is on.
 
 h5. Add one or more switches/buttons that let you speed up or slow down the clock.
-
+Again we kept the button from the first programmable lights project that can cycle through 11 different speeds by picking different bits of the counter to use as the slow clock.
