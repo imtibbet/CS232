@@ -1,5 +1,6 @@
 on
-shift_left
+off
+set_10101010
 Do_20
-rotate_left
+invert
 Loop

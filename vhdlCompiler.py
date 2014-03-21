@@ -243,7 +243,7 @@ if __name__ == "__main__":
     print(sys.argv)
     print(len(sys.argv))
     compiler = vhdlCompiler()
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 2 or len(sys.argv) > 3:
         print("usage: expect input file name as command line input.\n" +
               "Output file is an optional second parameter.\n" +
               "Input file should be program instruction written in" +
@@ -256,44 +256,48 @@ if __name__ == "__main__":
         print("Input File Contents:\n" + sourceText)
         print(sourceText.split())
         
-        outputStr = "-- Ian Tibbetts and Ryan Newell\n"
-        outputStr += "-- Project 5 Generated ROM\n"
-        outputStr += "-- Due: Mar 21, 2014\n"
-        outputStr += "library ieee;\n"
-        outputStr += "use ieee.std_logic_1164.all;\n"
-        outputStr += "use ieee.numeric_std.all;\n"
-        outputStr += "\n"
-        outputStr += "entity outputROM is\n"
-        outputStr += "  port (\n"
-        outputStr += "    addr : in std_logic_vector (7 downto 0);\n"
-        outputStr += "    data : out std_logic_vector (9 downto 0));\n"
-        outputStr += "end entity;\n"
-        outputStr += "\n"
-        outputStr += "architecture rtl of outputROM is\n"
-        outputStr += "\n"
-        outputStr += "begin\n"
-        outputStr += "\n"
-        outputStr += compiler.parseSource(sourceText)
-        outputStr += "\n"
-        outputStr += "end rtl;\n"
+        parseResult = compiler.parseSource(sourceText)
         if compiler.errorMessage:#if there is an error string
-            print(outputStr)
+            print(parseResult)
             print("Error(s) occurred:\n{}".format(compiler.errorMessage))
         else:
-            print(outputStr)
+            print(parseResult)
             if len(sys.argv) == 2:
                 listOutputPath = sys.argv[0].split("\\")[:-1]
                 listOutputFile = listOutputPath + ["outputROM.vhd"]
+                outputFileName = "outputROM"
                 print("output file is " + 
                       "\\".join(listOutputFile))
                 outputFile = open("\\".join(listOutputFile), mode="w", encoding ="utf-8")
             elif len(sys.argv) == 3:
                 print("output file is " + sys.argv[2])
+                outputFileName = sys.argv[2].split("\\")[-1].split(".")[0]
                 outputFile = open(sys.argv[2], mode="w", encoding ="utf-8")
             else:
                 print("usage: expect input file name as command line input.\n" +
                       "Output file is an optional second parameter.\n" +
                       "Input file should be program instruction written in" +
-                      " plain english using {}").format(compiler.keywordDefinitions)
+                      " plain english using {}".format(compiler.keywordDefinitions))
+                      
+            outputStr = "-- Ian Tibbetts and Ryan Newell\n"
+            outputStr += "-- Project 5 " + outputFileName + ".vhd\n"
+            outputStr += "-- Due: Mar 21, 2014\n"
+            outputStr += "library ieee;\n"
+            outputStr += "use ieee.std_logic_1164.all;\n"
+            outputStr += "use ieee.numeric_std.all;\n"
+            outputStr += "\n"
+            outputStr += "entity " + outputFileName + " is\n"
+            outputStr += "  port (\n"
+            outputStr += "    addr : in std_logic_vector (7 downto 0);\n"
+            outputStr += "    data : out std_logic_vector (9 downto 0));\n"
+            outputStr += "end entity;\n"
+            outputStr += "\n"
+            outputStr += "architecture rtl of " + outputFileName + " is\n"
+            outputStr += "\n"
+            outputStr += "begin\n"
+            outputStr += "\n"
+            outputStr += parseResult
+            outputStr += "\n"
+            outputStr += "end rtl;\n"
             outputFile.write(outputStr)
             outputFile.close()
