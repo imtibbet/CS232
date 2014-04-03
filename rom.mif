@@ -1,0 +1,17 @@
+-- program memory file
+DEPTH = 16;
+WIDTH = 8;
+ADDRESS_RADIX = HEX;
+DATA_RADIX = BIN;
+CONTENT
+BEGIN
+0 : 00001010;
+1 : 00010101;
+2 : 00100010;
+3 : 00110001;
+4 : 01000000;
+5 : 10001000;
+6 : 11000100;
+7 : 01010010;
+[8..F] : 11111111;  -- fill A0 to A1 with all 1s
+END
