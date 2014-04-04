@@ -16,7 +16,8 @@ entity memtest is
 		reset	 : in	std_logic;
 		faster	: in std_logic;
 		hold	: in std_logic;
-		output	 : out	std_logic_vector(7 downto 0)
+		output	 : out	std_logic_vector(7 downto 0);
+		RAMaddviewdisplay	: out unsigned(6 downto 0)
 	);
 
 end entity;
@@ -43,6 +44,14 @@ architecture rtl of memtest is
 	);
 	end component;
 	
+	component boxdriver
+		port
+	(
+		a	: in unsigned (3 downto 0);
+		result : out unsigned (6 downto 0)
+	);
+	end component;
+	
 	--signals
 	signal ROMaddress : unsigned(3 downto 0);
 	signal ROMdata	: std_logic_vector(7 downto 0);
@@ -57,9 +66,9 @@ architecture rtl of memtest is
 	signal startupcounter : unsigned(1 downto 0);
 	
 	-- state declaration
-	signal state   : unsigned(3 downto 0);
+	signal state   : unsigned(1 downto 0);
 	
---constants
+	--constants
 	constant zeros : unsigned(25 downto 0) := (others => '0');
 	
 begin
@@ -69,6 +78,9 @@ begin
 	
 	RAM1: memRAM
 		port map(address  => std_logic_vector(RAMaddress), clock => clk, data => RAMdata, wren => writeEnable, q => RAMwire);
+		
+	right7segment: boxdriver
+		port map(a => RAMaddress, result => RAMaddviewdisplay);
 		
 	-- process to slow down clock cycle
 	process (clk, reset)
@@ -96,7 +108,7 @@ begin
 		if reset = '0' then
 			ROMaddress <= "0000";
 			RAMaddress <= "0000";
-			state <= "0000";
+			state <= "00";
 			ROMdata <= "00000000";
 			RAMdata <= "00000000";
 			startupcounter <= "00";
@@ -104,44 +116,44 @@ begin
 		elsif (rising_edge(slowclock)) then
 			if hold = '0' then
 				case state is
-					when "0000" =>
+					when "00" =>
 						startupcounter <= startupcounter + 1;
 						if startupcounter = "10" then
+							-- to ensure that the last slot in RAM is written too without overwriting the first slot
+							writeEnable <= '0';	
+							RAMaddress <= "0000";
 							state <= state + 1;		
 						end if;
-					when "0001" =>
+					-- displays the value of each slot in RAM sequentially, the RAM address is one ahead of what is being displayed
+					when "01" =>
 						RAMdata <= RAMwire;
-						RAMaddress <= RAMaddress + 1;
 						if RAMaddress = "1111" then
 							state <= state + 1;
-						end if;
-					when "0010" =>
-						state <= state + 1;
-					when "0011" =>
-						ROMdata <= ROMwire;
-						state <= state + 1;
-					when "0100" =>
-						RAMdata <= ROMdata;
-						ROMaddress <= ROMaddress + 1;
-						state <= state + 1;
-					when "0101" =>
-						writeEnable <= '1';
-						state <= state + 1;
-					when "0110" =>
-						writeEnable <= '0';
-						RAMaddress <= RAMaddress + 1;
-						if RAMaddress = "1111" then
-							state <= "0001";
 						else
-							state <= "0011";
+							RAMaddress <= RAMaddress + 1;
 						end if;
+					-- pulls the value off of ROM, stops writing, and increments RAM address by one
+					when "10" =>
+						writeEnable <= '0';
+						ROMdata <= ROMwire;
+						RAMaddress <= RAMaddress + 1;
+						state <= state + 1;
+					-- gives ROMdata to RAM, enables writing which takes 1 clock cycle, increments ROM address by one, conditional statement to make sure every slot in ROM gets written to RAM than kicks to the display state
 					when others =>
-						state <= "0001";
+						RAMdata <= ROMdata;
+						writeEnable <= '1';
+						ROMaddress <= ROMaddress + 1;
+						if RAMaddress = "1111" then
+							startupcounter <= "10";
+							state <= "00";
+						else
+							state <= "10";
+						end if;
 				end case;
 			end if;
 		end if;
 		
 	end process;
-
+	
 output <= RAMdata;
 end rtl;
