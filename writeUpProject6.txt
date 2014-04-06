@@ -1,0 +1,115 @@
+h1. Moving Memory
+
+
+
+h3. Write Up
+
+
+
+h5. Include a description of your top-level design.
+
+
+
+h5. Include the initial contents of both your RAM and ROM.
+
+
+
+h3. Hardware Testing (video):
+
+
+
+
+h3. Extensions:
+
+
+
+h5. See how few states you can use to execute this task.
+
+We accomplished this by utilizing a specific loop register so the conditional branch always checks if the loop register is zero. This allows us to use all 8 bits after the op code for the branching instructions as address bits.
+
+
+
+h5. Enable some kind of user input to the task.
+
+
+
+h5. Write a Python program that can generate an MIF file from some other, more easily readable, format.
+
+
+
+Our mifCompiler.py does allow the user to provide english instructions (from a list of valid keywords we define) for a program in an input file, pass that input file to the python on the command line (and optionally specify an output file on the command line as well), which writes mif code to the output file for the program described. This uses the same language/lexing of our vhdCompiler (see&nbsp;[Project5|~imtibbet:Ryan Newell and Ian Tibbetts CS232 Project5])
+
+
+
+The method that changed to enable mif composition is given in the code snippet below:
+
+
+
+{code:title=mifCompiler.py|borderStyle=solid}
+    def getMachineInstructions(self,word):
+        instructions = "-- " + word + "\n"
+        if word.split("_")[0] == "DO":
+            self.loopCount = int(word.split("_")[1])
+            self.loopInstrs = ""
+        elif word == "LOOP":
+            oldLoopInstrs = self.loopInstrs
+            newLoopInstrs = ""
+            for _ in range(self.loopCount):
+                for line in oldLoopInstrs.splitlines(True):
+                    line = line.lstrip()
+                    if line[0:2] == "--":
+                        line = self.getMachineInstructions(line.rstrip('\n').split()[1])
+                        newLoopInstrs = line
+                instructions += newLoopInstrs
+            self.loopInstrs = ""
+        elif word == "ON":
+            self.prevLR = "11111111"
+            instructions += self.getNewAddress() + " : " + self.prevLR + ";\n"
+            self.loopInstrs += instructions
+        elif word == "OFF":
+            self.prevLR = "00000000"
+            instructions += self.getNewAddress() + " : " + self.prevLR + ";\n"
+            self.loopInstrs += instructions
+        elif word == "SHIFT_LEFT":
+            self.prevLR = self.prevLR[1:7] + "0"
+            instructions += self.getNewAddress() + " : " + self.prevLR + ";\n"
+            self.loopInstrs += instructions
+        elif word == "SHIFT_RIGHT":
+            self.prevLR = "0" + self.prevLR[0:6]
+            instructions += self.getNewAddress() + " : " + self.prevLR + ";\n"
+            self.loopInstrs += instructions
+        elif word == "ROTATE_LEFT":
+            self.prevLR = self.prevLR[1:7] + self.prevLR[0]
+            instructions += self.getNewAddress() + " : " + self.prevLR + ";\n"
+            self.loopInstrs += instructions
+        elif word == "ROTATE_RIGHT":
+            self.prevLR = self.prevLR[0] + self.prevLR[0:6]
+            instructions += self.getNewAddress() + " : " + self.prevLR + ";\n"
+            self.loopInstrs += instructions
+        elif word == "INVERT":
+            invertedLR = ""
+            for bit in self.prevLR:
+                invertedLR += str(int(not(int(bit))))
+            self.prevLR = invertedLR
+            instructions += self.getNewAddress() + " : " + self.prevLR + ";\n"
+            self.loopInstrs += instructions
+        elif word.split("_")[0] == "SET":
+            self.prevLR = self.setBits
+            instructions += self.getNewAddress() + " : " + self.prevLR + ";\n"
+            self.loopInstrs += instructions
+        else:
+            instructions = ""
+            twosExp = math.log2(self.address)
+            if not int(twosExp) == twosExp:
+                instructions += ("[" + str(self.address) + 
+                                 ":" + str(int(math.pow(2,math.ceil(twosExp)))-1) + 
+                                 "] : 11111111; --Fill remaining with all 1s\n")
+            instructions += "END"
+        return instructions
+{code}
+
+
+
+h5. Add a hold/freeze button to the display.
+
+We simply kept the hold switch we had implemented last time by having a flag on the process containing the state machine that stops it from running if the hold switch is on.
