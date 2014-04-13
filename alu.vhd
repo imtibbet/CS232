@@ -48,9 +48,9 @@ begin  -- test
   begin  -- process
     case op is
       when "000" =>        -- addition     
-			tdest <= '0' & (srcA + srcB);
+			tdest <= ('0' & srcA) + ('0' & srcB);
       when "001" =>        -- subtraction  
-			tdest <= '0' & (srcA - srcB);
+			tdest <= ('0' & srcA) - ('0' & srcB);
       when "010" =>        -- and          
 			tdest <= '0' & unsigned(std_logic_vector(srcA) and std_logic_vector(srcB));
       when "011" =>        -- or           
@@ -66,13 +66,11 @@ begin  -- test
 				tdest <= srcA(0) & srcA(15) & srcA(15 downto 1);
 			end if;
       when "110" =>        -- rotate       
-			if srcB(0) = '0' then
-				--rotated left by one if srcB(0) is 0
-				tdest <= '0' & srcA(14 downto 0) & srcA(15);
-			else
-				--otherwise right
-				tdest <= '0' & srcA(0) & srcA(15 downto 1);
-			end if;
+        if srcB(0) = '0' then
+          tdest <= srcA(15 downto 0) & srcA(15);
+        else
+          tdest <= srcA(0) & srcA(0) & srcA(15 downto 1);
+        end if;
 		when "111" =>        -- pass         
 			tdest <= '0' & srcA;
       when others =>
@@ -87,13 +85,15 @@ begin  -- test
 	cr(0) <= '1' when tdest = "00000000000000000" else
 				'0';--if the result of the operation is 0
 				
-	cr(1) <= ((((srcA(15))and(srcB(15)))and(not tdest(15)))) or ((((srcA(15))nand(srcB(15)))and tdest(15)));--if there is a 2's complement overflow
+	cr(1) <= (srcA(15) xnor srcB(15)) and (srcA(15) xor tdest(15)) when op = "000" else-- addition, overflow if operands the same and result different
+				(srcA(15) xor srcB(15)) and (srcA(15) xor tdest(15)) when op = "001" else-- subtraction, overflow if operands different and result opposite of minuend
+				'0';	--if there is a 2's complement overflow
 	
 	
 	cr(2) <= tdest(15); --if the result of the operation is negative
 	
 	
-	cr(3) <= tdest(16) xor (srcA(15) xnor srcB(15)); --if the operation generated a carry of '1'
+	cr(3) <= tdest(16); --if the operation generated a carry of '1'
 
 	
 end test;
