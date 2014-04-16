@@ -24,11 +24,11 @@ use ieee.numeric_std.all;
 entity alu is
   
   port (
-    srcA : in  unsigned(15 downto 0);         -- input A
-    srcB : in  unsigned(15 downto 0);         -- input B
-    op   : in  std_logic_vector(2 downto 0);  -- operation
-    cr   : out std_logic_vector(3 downto 0);  -- condition outputs
-    dest : out unsigned(15 downto 0));        -- output value
+	 srcA : in  unsigned(15 downto 0);         -- input A
+	 srcB : in  unsigned(15 downto 0);         -- input B
+	 op   : in  std_logic_vector(2 downto 0);  -- operation
+	 cr   : out std_logic_vector(3 downto 0);  -- condition outputs
+	 dest : out unsigned(15 downto 0));        -- output value
 
 end alu;
 

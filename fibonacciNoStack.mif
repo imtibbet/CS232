@@ -1,0 +1,19 @@
+-- program memory file
+DEPTH = 256;
+WIDTH = 16;
+ADDRESS_RADIX = HEX;
+DATA_RADIX = BIN;
+CONTENT
+BEGIN
+00 : 1111100000000000; -- load 0 to RA
+01 : 0110001000000000; -- print RA
+02 : 1111100000001001; -- load 1 to RB
+03 : 0110001000000000; -- print RB
+04 : 1000000001000010; -- add RA and RB into RC
+05 : 0011000100001001; -- conditional branch to done if overflow
+06 : 1111000100000000; -- move RB to RA
+07 : 1111001000000001; -- move RC to RB
+08 : 0010000000000011; -- unconditional branch to text line 11
+09 : 0011110000000000; -- done: exit
+[0A..FF] : 1111111111111111;  -- fill A0 to A1 with all 1s
+END

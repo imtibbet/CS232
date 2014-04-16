@@ -1,0 +1,24 @@
+move 0 RA
+push RA
+move 1 RA
+push RA
+beginning:
+pop RC #rc is 1
+pop RB #rb is 0
+add RB RA RD #rd is 1
+push rb
+push rc
+push rd
+#RE dest, rc, rd operands
+start:
+add rc re re
+brao halt
+add ones rd rd
+braz done
+bra start
+done:
+push re
+move 0 re
+bra beginning
+halt:
+

@@ -1,6 +1,0 @@
-on
-off
-set_10101010
-Do_20
-invert
-Loop

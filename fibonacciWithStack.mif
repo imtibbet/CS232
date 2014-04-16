@@ -1,0 +1,25 @@
+-- program memory file
+DEPTH = 256;
+WIDTH = 16;
+ADDRESS_RADIX = HEX;
+DATA_RADIX = BIN;
+CONTENT
+BEGIN
+00 : 1111100000000001; -- load 0 to rb
+01 : 0100001000000000; -- push rb to sp
+02 : 0110001000000000; -- print rb
+03 : 1111100000001010; -- load 1 to rc
+04 : 0100010000000000; -- push rc to sp
+05 : 0110010000000000; -- print rc
+06 : 0101010000000000; -- pop sp to rc
+07 : 0101001000000000; -- pop sp to rb
+08 : 1000001010000011; -- add rd rb rc
+09 : 0110011000000000; -- print rd
+0A : 0100001000000000; -- push rb to sp
+0B : 0100010000000000; -- push rc to sp
+0C : 0100011000000000; -- push rd to sp
+0D : 0011000100010000; -- conditional branch to done if overflow
+0E : 0010000000000110; -- unconditional branch to text line 14
+0F : 0011110000000000; -- done: exit
+[10..FF] : 1111111111111111;  -- fill A0 to A1 with all 1s
+END

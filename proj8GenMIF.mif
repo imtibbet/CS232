@@ -1,0 +1,27 @@
+-- program memory file
+DEPTH = 256;
+WIDTH = 16;
+ADDRESS_RADIX = DEC;
+DATA_RADIX = BIN;
+CONTENT
+BEGIN
+0 : 1111100000000000; -- MOVEI A C Execute RA <= 0
+1 : 0100000000000000; -- PUSH S Push register RA onto the stack and increment SP
+2 : 1111100000001000; -- MOVEI A C Execute RA <= 1
+3 : 0100000000000000; -- PUSH S Push register RA onto the stack and increment SP
+4 : 0101010000000000; -- POP S Decrement SP and put the top value on the stack into register RC
+5 : 0101001000000000; -- POP S Decrement SP and put the top value on the stack into register RB
+6 : 1000001000000011; -- ADD A B C Execute RD <= RB + RA
+7 : 0100001000000000; -- PUSH S Push register RB onto the stack and increment SP
+8 : 0100010000000000; -- PUSH S Push register RC onto the stack and increment SP
+9 : 0100011000000000; -- PUSH S Push register RD onto the stack and increment SP
+10 : 1000010100000100; -- ADD A B C Execute RE <= RC + RE
+11 : 0011000100010010; -- BRAO L Branch to address 18 if the CR overflow flag is set
+12 : 1000111011000011; -- ADD A B C Execute RD <= ONES + RD
+13 : 0011000000001111; -- BRAZ L Branch to address 15 if the CR zero flag is set
+14 : 0010000000001010; -- BRA L Unconditional branch to address 10
+15 : 0100100000000000; -- PUSH S Push register RE onto the stack and increment SP
+16 : 1111100000000100; -- MOVEI A C Execute RE <= 0
+17 : 0010000000000100; -- BRA L Unconditional branch to address 4
+[18..255] : 0011110000000000; --Fill remaining with halt operations
+END
