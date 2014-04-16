@@ -23,5 +23,6 @@ BEGIN
 15 : 0100100000000000; -- PUSH S Push register RE onto the stack and increment SP
 16 : 1111100000000100; -- MOVEI A C Execute RE <= 0
 17 : 0010000000000100; -- BRA L Unconditional branch to address 4
-[18..255] : 0011110000000000; --Fill remaining with halt operations
+18 : 0011110000000000; -- HALT execute the halt/exit instruction
+[19..255] : 0011110000000000; --Fill remaining with halt operations
 END

@@ -1,6 +1,6 @@
-move 0 RA
+movei 0 RA
 push RA
-move 1 RA
+movei 1 RA
 push RA
 beginning:
 pop RC #rc is 1
@@ -18,7 +18,7 @@ braz done
 bra start
 done:
 push re
-move 0 re
+movei 0 re
 bra beginning
 halt:
-
+halt

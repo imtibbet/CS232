@@ -21,4 +21,4 @@ push re
 movei 0 re
 bra beginning
 halt:
-
+halt
