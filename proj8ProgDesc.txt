@@ -1,25 +1,14 @@
-movei 0 RA
-push RA
-movei 1 RA
-push RA
-beginning:
-pop RC #rc is 1
-pop RB #rb is 0
-add RB RA RD #rd is 1
-push rb
-push rc
-push rd
-#RE dest, rc, rd operands
-start:
-add rc re re
-brao halt
-add ones rd rd
-braz done
-bra start
-done:
-push re
-oport re
-movei 0 re
-bra beginning
-halt:
+movei 0 ra#n - factorial to compute - initially 0
+movei 1 rb#n!
+factLoop:
+oport rb # print previous factorial
+sub ra ones ra # increment n by 1
+move ra rc # loop count initially n
+addLoop:
+add rb ra rb # add n to running factorial
+brao doneFact
+add rc ones rc # decrement loop count by 1
+braz factLoop
+bra addLoop
+doneFact:
 halt
