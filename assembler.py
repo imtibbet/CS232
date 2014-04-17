@@ -103,7 +103,7 @@ class Assembler:
     # Tokenizes the input data, discarding white space and comments
     # returns the tokens as a list of lists, one list for each line.
     #
-    # The tokenizer also converts each character to lower case.
+    # The tokenizer also converts each character to upper case.
     def tokenize( self, fp ):
         tokens = []
     
