@@ -1,14 +1,5 @@
+start:
 movei 0 ra#n - factorial to compute - initially 0
-movei 1 rb#n!
-factLoop:
-oport rb # print previous factorial
 sub ra ones ra # increment n by 1
-move ra rc # loop count initially n
-addLoop:
-add rb ra rb # add n to running factorial
-brao doneFact
-add rc ones rc # decrement loop count by 1
-braz factLoop
-bra addLoop
-doneFact:
-halt
+oport ra # print previous factorial
+bra start
