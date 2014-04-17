@@ -46,8 +46,7 @@ class AssemblyCompiler:
         for token in tokens:
             # if label
             if token[0][-1] == ":":
-                strippedLabel = token[0].replace(":","")
-                self.labels.update({strippedLabel:self.nextFreeAddress})
+                self.labels.update({token[0][-1]:self.nextFreeAddress})
             else:
                 token.insert(0,self.getNewAddress())
                 newTokens += [token]
