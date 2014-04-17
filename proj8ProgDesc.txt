@@ -18,6 +18,7 @@ braz done
 bra start
 done:
 push re
+oport re
 movei 0 re
 bra beginning
 halt:
