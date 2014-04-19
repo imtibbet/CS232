@@ -1,0 +1,14 @@
+start:
+movei 0 ra # n = 0
+movei 1 rb # n! = 1
+factLoop:
+	oport rb # print n!
+	sub ra ones ra # increment n
+	move ra rc # set add loop counter to n
+	move rb rd # set prev factorial
+	addLoop:
+		add rc ones rc # decrement add loop counter
+		braz factLoop
+		add rb rd rb # add to factorial total
+		brao start
+		bra addLoop

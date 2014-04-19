@@ -5,9 +5,22 @@ ADDRESS_RADIX = DEC;
 DATA_RADIX = BIN;
 CONTENT
 BEGIN
-0 : 1111100000000000; -- MOVEI A C Execute RA <= 0
-1 : 1001000111000000; -- SUB A B C Execute RA <= RA - ONES
-2 : 0110000000000000; -- OPORT S Send register RA to the output port
-3 : 0010000000000000; -- BRA L Unconditional branch to address 0
-[4..255] : 0011110000000000; -- HALT execute the halt/exit instruction
+0 : 1111100001111000; -- MOVEI A C Execute RA <= 15
+1 : 1111100010100001; -- MOVEI A C Execute RB <= 20
+2 : 1111010100000100; -- MOVE A C Execute RE <= SP
+3 : 1001101111000101; -- SUB A B C Execute SP <= SP - ONES
+4 : 0100000000000000; -- PUSH S Push register RA onto the stack and increment SP
+5 : 0100001000000000; -- PUSH S Push register RB onto the stack and increment SP
+6 : 0011010000001100; -- CALL L Call the routine at address 12
+7 : 1111100000010000; -- MOVEI A C Execute RA <= 2
+8 : 1001101000000101; -- SUB A B C Execute SP <= SP - RA
+9 : 0101000000000000; -- POP S Decrement SP and put the top value on the stack into register RA
+10 : 0110000000000000; -- OPORT S Send register RA to the output port
+11 : 0011110000000000; -- HALT execute the halt/exit instructionComment
+12 : 0000100000000001; -- LOADA D A Load from address [AA + RE] to register RA
+13 : 0000100100000010; -- LOADA D A Load from address [AB + RE] to register RB
+14 : 1000000001000000; -- ADD A B C Execute RA <= RA + RB
+15 : 0001100000000000; -- STOREA S A Store the value in register RA to address [0 + RE]
+16 : 0011100000000000; -- RETURN return from a routine
+[17..255] : 0011110000000000; -- HALT execute the halt/exit instructionComment
 END

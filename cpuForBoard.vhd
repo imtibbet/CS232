@@ -199,6 +199,7 @@ begin
 			CR <= std_logic_vector(zeros(3 downto 0));
 			writeEnable <= '0';
 			startupcounter <= zeros(2 downto 0); -- reset startup counter
+			oport <= std_logic_vector(zeros(15 downto 0));
 			state <= start;
 		elsif (rising_edge(slowclock)) then
 			if hold = '0' then
@@ -239,7 +240,7 @@ begin
 										MAR <= IR(7 downto 0);
 									end if;
 									-- Table B source assignment
-									case IR(11 downto 9) is
+									case IR(10 downto 8) is
 										when "000"=>-- RA
 											MBR <= RA;
 										when "001"=>-- RB
@@ -432,7 +433,7 @@ begin
 							case IR(14 downto 12) is
 								when "000"=>-- Load from RAM
 									-- Table B dest assignment
-									case IR(2 downto 0) is
+									case IR(10 downto 8) is
 										when "000"=>-- RA
 											RA <= unsigned(RAMwire);
 										when "001"=>-- RB
@@ -553,6 +554,7 @@ begin
 						state <= fetch;
 					
 					when halt=>
+						oport <= "1111111111111111";
 						state <= state; -- wait in halt state
 						
 				--end state case
@@ -573,3 +575,4 @@ begin
 	 REview  <= std_logic_vector(RE);
 
 end rtl;
+

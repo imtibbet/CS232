@@ -4,10 +4,11 @@ push RA
 movei 1 RA
 push RA
 beginning:
-	movei -1 re
-	loada sp rb
+	add ones sp re
+	loada rb 0
+	oport rb
 	add ones re re
-	loada sp ra
+	loada ra 0
 	sub ra ones ra # increment n
 	push ra
 #rc dest, ra n, rb (n-1)!
@@ -19,7 +20,7 @@ start:
 	bra start
 done:
 	push rc
-	movei 0 re
+	movei 0 rc
 	bra beginning
 print:
 	pop ra

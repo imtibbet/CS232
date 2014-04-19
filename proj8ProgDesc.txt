@@ -1,5 +1,11 @@
-start:
-movei 0 ra#n - factorial to compute - initially 0
-sub ra ones ra # increment n by 1
-oport ra # print previous factorial
-bra start
+movei 15 RA
+movei 20 RB
+call mul10 RA RA RB
+oport RA
+halt
+
+mul10: AA AB  # function label with two arguments and a return value
+loada RA AA
+loada RB AB
+add RA RB RA
+return RA
