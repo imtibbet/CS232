@@ -1,20 +1,22 @@
 h1. CPU
 
+h3. Include a description of the design of your assembler
 
-h3. Write Up
 
 
-h5. Include a description of the design of your assembler
+h3. Demonstrate that the assembler is generating correct code
 
-h5. Demonstrate that the assembler is generating correct code
 
-h5. Describe the programs you implemented. Demonstrate them working in simulation or on the board.
 
+h3. Describe the programs you implemented. Demonstrate them working in simulation or on the board.
+
+h5. Fibonacci
 Our generated Fibonacci program first computes all the numbers and preserves them on the stack, then prints them repeatedly.
 Here is the video of the generated Fibonacci program running with the hex displays:
 
 [fibHex|^20140420_174537.mp4]
 
+h5. Factorial
 Our generated factorial has two versions, one with and one without the stack.
 Both output the factorial result on the hex display.
 The stack one also outputs all the results at the end in descending order, alternating between n and n!
