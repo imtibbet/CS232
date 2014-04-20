@@ -103,8 +103,3 @@ intDiv: AA AB # integer division label with two arguments, both positive non zer
 	pop RB
 	pop RA
 	return RC
-		
-		
-		
-		
-		

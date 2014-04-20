@@ -1,0 +1,11 @@
+movei 15 RA
+movei 20 RB
+call mul10 RA RA RB
+oport RA
+halt
+
+mul10: param1 param2 # function label with two arguments and a return value
+loada RA param1
+loada RB param2
+add RA RB RA
+return RA

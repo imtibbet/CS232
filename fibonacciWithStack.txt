@@ -1,0 +1,23 @@
+movei 0 ra
+push ra
+movei 1 rb
+push rb
+begin:
+	add sp ones re
+	loada rb 0
+	add re ones re
+	loada ra 0
+	add ra rb rc
+	brao prePrint
+	push rc
+	bra begin
+prePrint:
+	sub re re re
+	bra print
+print:
+	loada ra 0
+	oport ra
+	sub re ones re
+	sub re sp rb
+	braz prePrint
+	bra print
