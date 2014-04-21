@@ -2,11 +2,11 @@ h1. CPU
 
 h3. Include a description of the design of your assembler
 
-
+Our assembler uses the given tokenize method and the utility dectobin8 and dectocomp8 methods, with small changes to integrate with our error handling and also to upper case everything, which we assumed in past project extensions. We use the extensions to previous projects and adapt it into AssemblyCompiler, which parses the tokens and generated the MIF file. This file has pass1 and pass2, which have the role defined by the project. We assign addresses to each non-label token in pass1 while building the label table. We have fields for any errors and for definitions of the keywords of our language, including the opCodes that occupy the determined beginning of the 16 bit IR.
 
 h3. Demonstrate that the assembler is generating correct code
 
-
+All programs used in this project are generated, with comments generated describing the action performed by the instruction. As a possible future extension we could include comments from the source code in the generated MIF as well.
 
 h3. Describe the programs you implemented. Demonstrate them working in simulation or on the board.
 
@@ -34,6 +34,14 @@ A lot of error handling in AssemblyCompiler.py, except for parameter passing, wh
 h5. Extend the instruction set in some way that makes writing a program easier. For example, set up a method that can handle functions with arguments.
 
 Four places in getMachineInstruction needed to be modified and pass1 needed to do more work. All four have paramExt comments as labels in source code
+
+This is an image defining the stack frame for the method:
+!20140420_155616.jpg|thumbnail,border=1!
+
+Setting register e, adding spave for the return value and then pushing the parameters require (2 + # of parameters) addresses before every call.
+After returning the return address will have been removed from the top of the stack and the value in the register specified after the return operation will be loaded onto the stack in the location denoted return value. There will need to be a constant 3 addresses reserved for after the call to move past all the parameters and pop the return value into the register specified by the call (the first register listed).
+
+The addresses are reserved in pass1 and populated in pass2 when the call instruction is being evaluated.
 
 h5. Create some test programs that evaluate all of the CPUs capabilities.
 
