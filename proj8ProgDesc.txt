@@ -11,6 +11,8 @@ oport RC # should be 70
 oport RC # should be 70
 oport RC # should be 70
 oport RC # should be 70
+movei 14 RA
+movei 5 RB
 call mod RC RA RB # 
 oport RC # should be 4
 oport RC # should be 4
@@ -22,6 +24,8 @@ oport RC # should be 4
 oport RC # should be 4
 oport RC # should be 4
 oport RC # should be 4
+movei 14 RA
+movei 5 RB
 call intDiv RC RA RB # 
 oport RC # should be 2
 oport RC # should be 2

@@ -43,6 +43,8 @@ After returning the return address will have been removed from the top of the st
 
 The addresses are reserved in pass1 and populated in pass2 when the call instruction is being evaluated.
 
+This parameter passing enables our cpu to perform other operations like multiplication, modulus and devision. This [assembly code|^proj8ProgDesc.txt] produced this [generated MIF|^proj8GenMIF.mif] that demonstrates those three operations. The [video result|^paramVideo.mov] was too big of a file so the attachment is half of it, showing the result of the multiplication and modulus. The division did produce 2, and then the program looped.
+
 h5. Create some test programs that evaluate all of the CPUs capabilities.
 
 h3. Code Submitted:
