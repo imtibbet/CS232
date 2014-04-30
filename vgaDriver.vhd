@@ -48,102 +48,102 @@ begin
 			vcountInt <= 0;
 		elsif (rising_edge(clk)) then
 			case vcountInt is 
-				when 0 to 1 =>--"000000000" | "000000001" =>
+				when 0 to 1 => --v sync pulse
 					vsync <= '0';
 					case hcountInt is
-						when 0 to 92 =>
+						when 0 to 92 => --h sync pulse
 							hsync <= '0';
 							hcountInt <= hcountInt + 1;
-						when 93 to 137 =>
+						when 93 to 137 => --h front porch
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when 138 to 777 =>
+						when 138 to 777 => --h data
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when 778 to 798 =>
+						when 778 to 798 => --h back porch
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when others =>
+						when others => --h back porch, loop back to right of screen, increment line
 							hsync <= '1';
 							hcountInt <= 0;
 							vcountInt <= vcountInt + 1;
 					end case;
-				when 2 to 34 =>--"000000010" to "000100001" =>
+				when 2 to 34 => -- v front porch
 					vsync <= '1';
 					case hcountInt is
-						when 0 to 92 =>
+						when 0 to 92 => --h sync pulse
 							hsync <= '0';
 							hcountInt <= hcountInt + 1;
-						when 93 to 137 =>
+						when 93 to 137 => --h front porch
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when 138 to 777 =>
+						when 138 to 777 => --h data
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when 778 to 798 =>
+						when 778 to 798 => --h back porch
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when others =>
+						when others => --h back porch, loop back to right of screen, increment line
 							hsync <= '1';
 							hcountInt <= 0;
 							vcountInt <= vcountInt + 1;
 					end case;
-				when 35 to 514 =>--"000100010" to "100000001" =>
+				when 35 to 514 => --v data
 					vsync <= '1';
 					case hcountInt is
-						when 0 to 92 =>
+						when 0 to 92 => --h sync pulse
 							hsync <= '0';
 							hcountInt <= hcountInt + 1;
-						when 93 to 137 =>
+						when 93 to 137 => --h front porch
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when 138 to 777 =>
+						when 138 to 777 => --h data
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when 778 to 798 =>
+						when 778 to 798 => --h back porch
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when others =>
+						when others => --h back porch, loop back to right of screen, increment line
 							hsync <= '1';
 							hcountInt <= 0;
 							vcountInt <= vcountInt + 1;
 					end case;
-				when 515 to 523 =>--"100000010" to "100001111" =>
+				when 515 to 523 => --v back porch
 					vsync <= '1';
 					case hcountInt is
-						when 0 to 92 =>
+						when 0 to 92 => --h sync pulse
 							hsync <= '0';
 							hcountInt <= hcountInt + 1;
-						when 93 to 137 =>
+						when 93 to 137 => --h front porch
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when 138 to 777 =>
+						when 138 to 777 => --h data
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when 778 to 798 =>
+						when 778 to 798 => --h back porch
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when others =>
+						when others => --h back porch, loop back to right of screen, increment line
 							hsync <= '1';
 							hcountInt <= 0;
 							vcountInt <= vcountInt + 1;
 					end case;
-				when others =>
+				when others => --last cycle of v back porch, returns to top right of screen at end 
 					vsync <= '1';
 					case hcountInt is
-						when 0 to 92 =>
+						when 0 to 92 => --h sync pulse
 							hsync <= '0';
 							hcountInt <= hcountInt + 1;
-						when 93 to 137 =>
+						when 93 to 137 => --h front porch
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when 138 to 777 =>
+						when 138 to 777 => --h data
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when 778 to 798 =>
+						when 778 to 798 => --h back porch
 							hsync <= '1';
 							hcountInt <= hcountInt + 1;
-						when others =>
+						when others => --h back porch, loop back to top right of screen
 							hsync <= '1';
 							hcountInt <= 0;
 							vcountInt <= 0;
