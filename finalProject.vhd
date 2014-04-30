@@ -61,7 +61,14 @@ begin
 				if column >= 0 and column < 640 then
 					if row >= 0 and row < 480 then
 					--useable area on screen, all pixels will be turned on from here
-						redOut <= "1111";
+					
+						if column = 0 or column = 639 or row = 0 or row = 479 then
+							blueOut <= "1001";
+						else
+							blueOut <= "0000";
+						end if;
+					
+					--end of useable area
 					else
 						redOut <= "0000";
 						greenOut <= "0000";
