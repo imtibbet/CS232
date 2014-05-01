@@ -47,7 +47,15 @@ end component;
 	signal row : integer;
 	signal counter : unsigned(1 downto 0);
 	signal slowclock : std_logic;
-	
+
+	--A 2-d array declaration, from http://vhdlguru.blogspot.com/2010/02/arrays-and-records-in-vhdl.html
+	type rowBlocks is array (0 to 3) of std_logic_vector(11 downto 0);
+	type columnBlocks is array (0 to 2) of rowBlocks; 
+	signal blockGrid : columnBlocks;  --blockGrid is a row*column two dimensional array.
+	--initialization to zeros.
+	blockGrid <= ((others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')));
+	--element access is given by blockGrid(0)(0), etc
+	--entire rows may be assigned by blockGrid(0) <= "0001000" for example 
 begin
 	VGA: vgaDriver
 		port map(clk => slowclock, reset => resetT, 
