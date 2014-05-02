@@ -14,8 +14,12 @@ use ieee.std_logic_unsigned.all;
 entity finalProject is
 
 	port(
-		clkT		 : in	std_logic;
-		resetT	 : in	std_logic;
+		clkT		: in	std_logic;
+		resetT	 	: in	std_logic;
+		shiftLeftBtn	: in std_logic;
+		shiftRightBtn 	: in std_logic;
+		rotateLeftBtn	: in std_logic;
+		rotateRightBtn 	: in std_logic;
 		redOut	 : out	std_logic_vector(3 downto 0);
 		greenOut : out	std_logic_vector(3 downto 0);
 		blueOut	 : out	std_logic_vector(3 downto 0);
@@ -45,7 +49,8 @@ end component;
 	signal vcounterT : integer;
 	signal column : integer;
 	signal row : integer;
-	signal counter : unsigned(1 downto 0);
+	signal counter : unsigned(10 downto 0);
+	signal vgaClock : std_logic;
 	signal slowclock : std_logic;
 
 	constant blockSize : integer := 30;
@@ -59,27 +64,61 @@ end component;
 --							 ((others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')),
 --							  (others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')),
 --							  (others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')));
+
+	--tetris variables for recording player actions
+	variable shiftLeft : std_logic;
+	variable shiftRight : std_logic;
+	variable rotateLeft : std_logic;
+	variable rotateRight : std_logic;
 begin
 	VGA: vgaDriver
-		port map(clk => slowclock, reset => resetT, 
+		port map(clk => vgaClock, reset => resetT, 
 			hsync => hsyncT, vsync => vsyncT, 
 			hcounter => hcounterT, vcounter => vcounterT);
 
 	column <= hcounterT - 138;
 	row <= vcounterT - 35;
 	
+	--process to slow set player actions
+	process (shiftLeftBtn, shiftRightBtn, rotateLeftBtn, rotateRightBtn)
+	begin
+		if (falling_edge(shiftLeftBtn)) and shiftRight = '0' and rotateLeft = '0' and rotateRight = '0' then
+			shiftLeft <= '1';
+		elsif (falling_edge(shiftRightBtn)) and shiftLeft = '0' and rotateLeft = '0' and rotateRight = '0' then
+			shiftRight <= '1';
+		elsif (falling_edge(rotateLeftBtn)) and shiftLeft = '0' and shiftRight = '0' and rotateRight = '0' then
+			rotateLeft <= '1';
+		elsif (falling_edge(rotateRightBtn)) and shiftLeft = '0' and shiftRight = '0' and rotateLeft = '0' then
+			rotateRight <= '1';
+		end if;
+	end process;
+	
+	--process to slow 50MHz clock to 25MHz
+	process (clkT)
+	begin
+		if (rising_edge(clkT)) then
+			counter <= counter + 1;
+		end if;
+	end process;
+	vgaClock <= std_logic(counter(0));
+	slowclock <= std_logic(counter(7));-- picked 7 arbitrarily, need a state machine clock
+	
 	-- needs to change to clear dynamically based on array lengths, will be loops
---	process (resetT)
---	begin
---		if resetT = '0' then
---			--initialization to zeros.
---			blockGrid <= ((others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')),
---							  (others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')),
---							  (others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')));
---			--element access is given by blockGrid(0)(0), etc
---			--entire rows may be assigned by blockGrid(0) <= "0001000" for example 
---		end if;
---	end process;
+	process (slowclock, resetT)
+	begin
+		if resetT = '0' then
+			--reset all blocks to zeros.
+			for i in 0 to blockWidth loop
+				for j in 0 to blockHeight loop
+					blockGrid(i)(j) <= zeros;
+				end loop;
+			end loop;
+		elsif rising_edge(slowclock) then
+			--state machine for the game of tetris
+			--have to evaluate the board for generating new blocks
+			--and clearing lines, then move b
+		end if;
+	end process;
 
 	process (column, row)
 	begin
@@ -118,14 +157,5 @@ begin
 			blueOut <= "0000";
 		end if;
 	end process;
-	
---process to slow 50MHz clock to 25MHz
-	process (clkT)
-	begin
-		if (rising_edge(clkT)) then
-			counter <= counter + 1;
-		end if;
-	end process;
-	slowclock <= std_logic(counter(0));
 
 end rtl;
