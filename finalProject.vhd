@@ -49,7 +49,7 @@ end component;
 	signal vcounterT : integer;
 	signal column : integer;
 	signal row : integer;
-	signal counter : unsigned(10 downto 0);
+	signal counter : unsigned(26 downto 0);
 	signal vgaClock : std_logic;
 	signal slowclock : std_logic;
 
@@ -66,10 +66,12 @@ end component;
 --							  (others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')));
 
 	--tetris variables for recording player actions
-	variable shiftLeft : std_logic;
-	variable shiftRight : std_logic;
-	variable rotateLeft : std_logic;
-	variable rotateRight : std_logic;
+--	variable shiftLeft : std_logic;
+--	variable shiftRight : std_logic;
+--	variable rotateLeft : std_logic;
+--	variable rotateRight : std_logic;
+	type intArray is array(0 to 1) of integer;
+	signal activeBlock : intArray;
 begin
 	VGA: vgaDriver
 		port map(clk => vgaClock, reset => resetT, 
@@ -82,29 +84,25 @@ begin
 	--process to slow set player actions
 	process (shiftLeftBtn, shiftRightBtn, rotateLeftBtn, rotateRightBtn)
 	begin
-		if (falling_edge(shiftLeftBtn)) and shiftRight = '0' and rotateLeft = '0' and rotateRight = '0' then
-			shiftLeft <= '1';
-		elsif (falling_edge(shiftRightBtn)) and shiftLeft = '0' and rotateLeft = '0' and rotateRight = '0' then
-			shiftRight <= '1';
-		elsif (falling_edge(rotateLeftBtn)) and shiftLeft = '0' and shiftRight = '0' and rotateRight = '0' then
-			rotateLeft <= '1';
-		elsif (falling_edge(rotateRightBtn)) and shiftLeft = '0' and shiftRight = '0' and rotateLeft = '0' then
-			rotateRight <= '1';
+--		if (falling_edge(shiftLeftBtn)) or (falling_edge(shiftLeftBtn)) or (falling_edge(rotateLeftBtn)) or (falling_edge(rotateRightBtn)) then
+--			shiftLeft <= '1';	
+--		end if;
+		if (falling_edge(shiftLeftBtn)) then-- and shiftRight = '0' and rotateLeft = '0' and rotateRight = '0' then
+			--shiftLeft <= '1';
+			activeBlock(0) <= active(0) - 1;
+		elsif (falling_edge(shiftRightBtn)) then-- and shiftLeft = '0' and rotateLeft = '0' and rotateRight = '0' then
+			--shiftRight <= '1';
+			activeBlock(0) <= active(0) + 1;
+--		elsif (falling_edge(rotateLeftBtn)) then-- and shiftLeft = '0' and shiftRight = '0' and rotateRight = '0' then
+			--rotateLeft <= '1';
+--		elsif (falling_edge(rotateRightBtn)) then-- and shiftLeft = '0' and shiftRight = '0' and rotateLeft = '0' then
+			--rotateRight <= '1';
 		end if;
 	end process;
 	
 	--process to slow 50MHz clock to 25MHz
-	process (clkT)
-	begin
-		if (rising_edge(clkT)) then
-			counter <= counter + 1;
-		end if;
-	end process;
-	vgaClock <= std_logic(counter(0));
-	slowclock <= std_logic(counter(7));-- picked 7 arbitrarily, need a state machine clock
-	
-	-- needs to change to clear dynamically based on array lengths, will be loops
-	process (slowclock, resetT)
+	--listens to reset button (also could listen to a color shift button)
+	process (clkT, resetT)
 	begin
 		if resetT = '0' then
 			--reset all blocks to zeros.
@@ -113,13 +111,34 @@ begin
 					blockGrid(i)(j) <= zeros;
 				end loop;
 			end loop;
-		elsif rising_edge(slowclock) then
+		elsif (rising_edge(clkT)) then
+			counter <= counter + 1;
+			blockGrid(activeBlock(0))(activeBlock(1)) <= "100100000000";
+		end if;
+	end process;
+	vgaClock <= std_logic(counter(0));
+	slowclock <= std_logic(counter(25));-- 25th bit of 50MHz clock gets 1.5 times a second, need a state machine clock
+	
+	-- process to advance the active block down one
+	process (slowclock)
+	begin
+		if rising_edge(slowclock) then
 			--state machine for the game of tetris
 			--have to evaluate the board for generating new blocks
 			--and clearing lines, then move b
+
+			--if on next to last row, reset the active block to the top 
+			if activeBlock(1) = (blockHeight - 1) then
+				activeBlock(1) <= 0;
+				
+			--else move the active block down one
+			else
+				activeBlock(1) <= activeBlock(1) + 1;
+			end if;
 		end if;
 	end process;
 
+	--sets the pixels to be turned on, blocks in a grid
 	process (column, row)
 	begin
 		
@@ -138,13 +157,13 @@ begin
 				for i in 0 to blockWidth loop
 					for j in 0 to blockHeight loop
 						if column > 1+(i*blockSize) and column < ((i+1)*blockSize) and row > 1+(j*blockSize) and row < ((j+1)*blockSize) then
-							blueOut <= "1001"; --<= blockGrid(i)(j)(3 downto 0)
-							--greenOut <= blockGrid(i)(j)(7 downto 4)
-							--redOut <= blockGrid(i)(j)(11 downto 8)
+--							blueOut <= "1001";
+							blueOut <= blockGrid(i)(j)(3 downto 0);
+							greenOut <= blockGrid(i)(j)(7 downto 4);
+							redOut <= blockGrid(i)(j)(11 downto 8);
 						end if;
 					end loop;
 				end loop;
-				
 			--not useable area
 			else
 				redOut <= "0000";
