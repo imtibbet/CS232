@@ -18,8 +18,6 @@ entity finalProject is
 		resetT	 	: in	std_logic;
 		shiftLeftBtn	: in std_logic;
 		shiftRightBtn 	: in std_logic;
-		rotateLeftBtn	: in std_logic;
-		rotateRightBtn 	: in std_logic;
 		redOut	 : out	std_logic_vector(3 downto 0);
 		greenOut : out	std_logic_vector(3 downto 0);
 		blueOut	 : out	std_logic_vector(3 downto 0);
@@ -50,13 +48,15 @@ end component;
 	signal column : integer;
 	signal row : integer;
 	signal counter : unsigned(26 downto 0);
+	signal sCounter : unsigned(27 downto 0);
+	signal sWaitCounter : unsigned(27 downto 0);
 	signal vgaClock : std_logic;
 	signal slowclock : std_logic;
 
 	constant blockSize : integer := 30;
 	constant zeros : std_logic_vector(11 downto 0) := (others=>'0');
-	constant blockWidth : integer := 600/blockSize;
-	constant blockHeight : integer := 450/blockSize;
+	constant blockWidth : integer := 640/blockSize-1;
+	constant blockHeight : integer := 480/blockSize-2;
 	--A 2-d array declaration, from http://vhdlguru.blogspot.com/2010/02/arrays-and-records-in-vhdl.html
 	type rowBlocks is array (0 to blockHeight) of std_logic_vector(11 downto 0); -- 12 bit vector in each cell, 4 bits per color
 	type columnBlocks is array (0 to blockWidth) of rowBlocks; 
@@ -66,12 +66,17 @@ end component;
 --							  (others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')));
 
 	--tetris variables for recording player actions
---	variable shiftLeft : std_logic;
---	variable shiftRight : std_logic;
---	variable rotateLeft : std_logic;
---	variable rotateRight : std_logic;
 	type intArray is array(0 to 1) of integer;
-	signal activeBlock : intArray;
+	signal activeBlock : intArray := (others=>0);
+	signal prevBlock : intArray := (others=>0);
+	signal moveFlag : std_logic;
+	
+	-- Build an enumerated type for the state machine
+	type state_type is (sStart, sCount, sStepDown, sMoveLeft, sMoveRight, sWaitLeftUp, sWaitRightUp, sStepDownLeft, sStepDownRight);
+
+	-- Register to hold the current state
+	signal state   : state_type;
+	
 begin
 	VGA: vgaDriver
 		port map(clk => vgaClock, reset => resetT, 
@@ -81,27 +86,19 @@ begin
 	column <= hcounterT - 138;
 	row <= vcounterT - 35;
 	
-	--process to slow set player actions
-	process (shiftLeftBtn, shiftRightBtn, rotateLeftBtn, rotateRightBtn)
+	--process to slow 50MHz clock to 25MHz
+	process (clkT)
 	begin
---		if (falling_edge(shiftLeftBtn)) or (falling_edge(shiftLeftBtn)) or (falling_edge(rotateLeftBtn)) or (falling_edge(rotateRightBtn)) then
---			shiftLeft <= '1';	
---		end if;
-		if (falling_edge(shiftLeftBtn)) then-- and shiftRight = '0' and rotateLeft = '0' and rotateRight = '0' then
-			--shiftLeft <= '1';
-			activeBlock(0) <= active(0) - 1;
-		elsif (falling_edge(shiftRightBtn)) then-- and shiftLeft = '0' and rotateLeft = '0' and rotateRight = '0' then
-			--shiftRight <= '1';
-			activeBlock(0) <= active(0) + 1;
---		elsif (falling_edge(rotateLeftBtn)) then-- and shiftLeft = '0' and shiftRight = '0' and rotateRight = '0' then
-			--rotateLeft <= '1';
---		elsif (falling_edge(rotateRightBtn)) then-- and shiftLeft = '0' and shiftRight = '0' and rotateLeft = '0' then
-			--rotateRight <= '1';
+		if (rising_edge(clkT)) then
+			counter <= counter + 1;
 		end if;
 	end process;
+	vgaClock <= std_logic(counter(0));
+	slowclock <= std_logic(counter(25));-- 25th bit of 50MHz clock gets 1.5 times a second, need a state machine clock
 	
-	--process to slow 50MHz clock to 25MHz
-	--listens to reset button (also could listen to a color shift button)
+
+	
+	--process to slow set player actions
 	process (clkT, resetT)
 	begin
 		if resetT = '0' then
@@ -111,30 +108,111 @@ begin
 					blockGrid(i)(j) <= zeros;
 				end loop;
 			end loop;
-		elsif (rising_edge(clkT)) then
-			counter <= counter + 1;
-			blockGrid(activeBlock(0))(activeBlock(1)) <= "100100000000";
-		end if;
-	end process;
-	vgaClock <= std_logic(counter(0));
-	slowclock <= std_logic(counter(25));-- 25th bit of 50MHz clock gets 1.5 times a second, need a state machine clock
-	
-	-- process to advance the active block down one
-	process (slowclock)
-	begin
-		if rising_edge(slowclock) then
-			--state machine for the game of tetris
-			--have to evaluate the board for generating new blocks
-			--and clearing lines, then move b
-
-			--if on next to last row, reset the active block to the top 
-			if activeBlock(1) = (blockHeight - 1) then
-				activeBlock(1) <= 0;
-				
-			--else move the active block down one
-			else
-				activeBlock(1) <= activeBlock(1) + 1;
-			end if;
+			activeBlock(0) <= 0;
+			activeBlock(1) <= 0;
+			sCounter <= "0000000000000000000000000000";
+			sWaitCounter <= "0000000000000000000000000000";
+		elsif rising_edge(clkT) then
+			
+			case state is
+				when sStart =>
+					activeBlock(0) <= 0;
+					activeBlock(1) <= 0;
+					sCounter <= "0000000000000000000000000000";
+					if sWaitCounter(26) = '1' then
+						state <= sCount;
+					else
+						sWaitCounter <= sWaitCounter + 1;
+						state <= sStart;
+					end if;
+				when sCount =>
+					if sCounter(25) = '1' then
+						state <= sStepDown;
+					elsif shiftLeftBtn = '0' then
+						state <= sMoveLeft;
+					elsif shiftRightBtn = '0' then
+						state <= sMoveRight;
+					else
+						sCounter <= sCounter + 1;
+						state <= sCount;
+					end if;
+				when sStepDown =>
+					sCounter <= "0000000000000000000000000000";
+					if blockGrid(activeBlock(0))(activeBlock(1) + 1) /= zeros then
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= "000000001001";
+					else
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= "100100000000";
+					end if;
+					activeBlock(1) <= activeBlock(1) + 1;
+					state <= sCount;
+				when sMoveLeft =>
+					if blockGrid(activeBlock(0) - 1)(activeBlock(1)) /= zeros then
+						blockGrid(activeBlock(0) - 1)(activeBlock(1)) <= "000000001001";
+					else
+						blockGrid(activeBlock(0) - 1)(activeBlock(1)) <= "100100000000";
+					end if;
+					activeBlock(0) <= activeBlock(0) - 1;
+					sCounter <= sCounter + 1;
+					state <= sWaitLeftUp;
+				when sMoveRight =>
+					if blockGrid(activeBlock(0) + 1)(activeBlock(1)) /= zeros then
+						blockGrid(activeBlock(0) + 1)(activeBlock(1)) <= "000000001001";
+					else
+						blockGrid(activeBlock(0) + 1)(activeBlock(1)) <= "100100000000";
+					end if;
+					activeBlock(0) <= activeBlock(0) + 1;
+					sCounter <= sCounter + 1;
+					state <= sWaitRightUp;
+				when sWaitLeftUp =>
+					if sCounter(25) = '1' then
+						state <= sStepDownLeft;
+					elsif shiftLeftBtn = '1' then
+						sCounter <= sCounter + 1;
+						state <= sCount;
+					else
+						sCounter <= sCounter + 1;
+						state <= sWaitLeftUp;
+					end if;
+				when sWaitRightUp =>
+					if sCounter(25) = '1' then
+						state <= sStepDownRight;
+					elsif shiftRightBtn = '1' then
+						sCounter <= sCounter + 1;
+						state <= sCount;
+					else
+						sCounter <= sCounter + 1;
+						state <= sWaitRightUp;
+					end if;
+				when sStepDownLeft =>
+					sCounter <= "0000000000000000000000000000";
+					if blockGrid(activeBlock(0))(activeBlock(1) + 1) /= zeros then
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= "000000001001";
+					else
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= "100100000000";
+					end if;
+					activeBlock(1) <= activeBlock(1) + 1;
+					if shiftLeftBtn = '1' then
+						state <= sCount;
+					else
+						state <= sWaitLeftUp;
+					end if;
+				when sStepDownRight =>
+					sCounter <= "0000000000000000000000000000";
+					if blockGrid(activeBlock(0))(activeBlock(1) + 1) /= zeros then
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= "000000001001";
+					else
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= "100100000000";
+					end if;
+					activeBlock(1) <= activeBlock(1) + 1;
+					if shiftRightBtn = '1' then
+						state <= sCount;
+					else
+						state <= sWaitRightUp;
+					end if;
+				when others =>
+					sWaitCounter <= "0000000000000000000000000000";
+					state <= sStart;
+			end case;
 		end if;
 	end process;
 
@@ -147,12 +225,16 @@ begin
 			if row >= 0 and row < 480 then
 				--initially off
 				blueOut <= "0000";	
+				redOut <= "0000";	
+				greenOut <= "0000";	
 				
 				-- on for border
 				if column = 0 or column = 639 or row = 0 or row = 479 then
 					blueOut <= "1001";
+				--else 
+
 				end if;
-				
+
 				-- turn valid blocks on
 				for i in 0 to blockWidth loop
 					for j in 0 to blockHeight loop
