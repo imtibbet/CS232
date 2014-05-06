@@ -18,11 +18,13 @@ entity finalProject is
 		resetT	 	: in	std_logic;
 		shiftLeftBtn	: in std_logic;
 		shiftRightBtn 	: in std_logic;
+		up 	: in std_logic;
 		redOut	 : out	std_logic_vector(3 downto 0);
 		greenOut : out	std_logic_vector(3 downto 0);
 		blueOut	 : out	std_logic_vector(3 downto 0);
 		hsyncT	 : out	std_logic;
-		vsyncT	 : out	std_logic	
+		vsyncT	 : out	std_logic;
+		stateAdd	 : out	std_logic_vector(3 downto 0)
 	);
 
 end entity;
@@ -55,8 +57,11 @@ end component;
 
 	constant blockSize : integer := 30;
 	constant zeros : std_logic_vector(11 downto 0) := (others=>'0');
+	constant redVec : std_logic_vector(11 downto 0) := "100100000000";
+	constant greenVec : std_logic_vector(11 downto 0) := "000010010000";
+	constant blueVec : std_logic_vector(11 downto 0) := "000000001001";
 	constant blockWidth : integer := 640/blockSize-1;
-	constant blockHeight : integer := 480/blockSize-2;
+	constant blockHeight : integer := 480/blockSize-1;
 	--A 2-d array declaration, from http://vhdlguru.blogspot.com/2010/02/arrays-and-records-in-vhdl.html
 	type rowBlocks is array (0 to blockHeight) of std_logic_vector(11 downto 0); -- 12 bit vector in each cell, 4 bits per color
 	type columnBlocks is array (0 to blockWidth) of rowBlocks; 
@@ -65,14 +70,19 @@ end component;
 --							  (others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')),
 --							  (others=>(others=>'0')),(others=>(others=>'0')),(others=>(others=>'0')));
 
-	--tetris variables for recording player actions
+	--game variables for recording player actions
 	type intArray is array(0 to 1) of integer;
-	signal activeBlock : intArray := (others=>0);
+	signal activeBlock : intArray := (0 => blockWidth/2, 1 => 0);
 	signal prevBlock : intArray := (others=>0);
 	signal moveFlag : std_logic;
+	signal stateAddress : std_logic_vector(3 downto 0);
+	signal fallSpeed : integer := 26;
 	
 	-- Build an enumerated type for the state machine
-	type state_type is (sStart, sCount, sStepDown, sMoveLeft, sMoveRight, sWaitLeftUp, sWaitRightUp, sStepDownLeft, sStepDownRight);
+	type state_type is (sStart, sCount, sStepDown, 
+								sMoveLeft, sMoveRight, sMoveUp, 
+								sWaitLeftUp, sWaitRightUp, sWaitUp, 
+								sStepDownLeft, sStepDownRight, sStepDownUp);
 
 	-- Register to hold the current state
 	signal state   : state_type;
@@ -94,8 +104,7 @@ begin
 		end if;
 	end process;
 	vgaClock <= std_logic(counter(0));
-	slowclock <= std_logic(counter(25));-- 25th bit of 50MHz clock gets 1.5 times a second, need a state machine clock
-	
+	stateAdd <= stateAddress;
 
 	
 	--process to slow set player actions
@@ -112,12 +121,17 @@ begin
 			activeBlock(1) <= 0;
 			sCounter <= "0000000000000000000000000000";
 			sWaitCounter <= "0000000000000000000000000000";
+			stateAddress <= "0000";
+			fallSpeed <= 26;
+			activeBlock(0) <= blockWidth/2;
+			activeBlock(1) <= 0;
+			state <= sStart;
 		elsif rising_edge(clkT) then
 			
 			case state is
 				when sStart =>
-					activeBlock(0) <= 0;
-					activeBlock(1) <= 0;
+					stateAddress <= "0000";
+					blockGrid(activeBlock(0))(activeBlock(1)) <= redVec;
 					sCounter <= "0000000000000000000000000000";
 					if sWaitCounter(26) = '1' then
 						state <= sCount;
@@ -125,46 +139,79 @@ begin
 						sWaitCounter <= sWaitCounter + 1;
 						state <= sStart;
 					end if;
+					
+					
 				when sCount =>
-					if sCounter(25) = '1' then
+					stateAddress <= "0001";
+					if sCounter(fallSpeed) = '1' then
 						state <= sStepDown;
-					elsif shiftLeftBtn = '0' then
+					elsif up = '0' then
+						state <= sMoveUp;
+					elsif shiftLeftBtn = '0' and activeBlock(0) /= 0 then
 						state <= sMoveLeft;
-					elsif shiftRightBtn = '0' then
+					elsif shiftRightBtn = '0' and activeBlock(0) /= blockWidth then
 						state <= sMoveRight;
 					else
 						sCounter <= sCounter + 1;
 						state <= sCount;
 					end if;
+					
+					
 				when sStepDown =>
+					stateAddress <= "0010";
 					sCounter <= "0000000000000000000000000000";
 					if blockGrid(activeBlock(0))(activeBlock(1) + 1) /= zeros then
-						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= "000000001001";
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= blueVec;
 					else
-						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= "100100000000";
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= redVec;
 					end if;
+					blockGrid(activeBlock(0))(activeBlock(1)) <= zeros;
 					activeBlock(1) <= activeBlock(1) + 1;
 					state <= sCount;
+					
+					
 				when sMoveLeft =>
+					stateAddress <= "0011";
 					if blockGrid(activeBlock(0) - 1)(activeBlock(1)) /= zeros then
-						blockGrid(activeBlock(0) - 1)(activeBlock(1)) <= "000000001001";
+						blockGrid(activeBlock(0) - 1)(activeBlock(1)) <= blueVec;
 					else
-						blockGrid(activeBlock(0) - 1)(activeBlock(1)) <= "100100000000";
+						blockGrid(activeBlock(0) - 1)(activeBlock(1)) <= redVec;
 					end if;
+					blockGrid(activeBlock(0))(activeBlock(1)) <= zeros;
 					activeBlock(0) <= activeBlock(0) - 1;
 					sCounter <= sCounter + 1;
 					state <= sWaitLeftUp;
+					
+					
 				when sMoveRight =>
+					stateAddress <= "0100";
 					if blockGrid(activeBlock(0) + 1)(activeBlock(1)) /= zeros then
-						blockGrid(activeBlock(0) + 1)(activeBlock(1)) <= "000000001001";
+						blockGrid(activeBlock(0) + 1)(activeBlock(1)) <= blueVec;
 					else
-						blockGrid(activeBlock(0) + 1)(activeBlock(1)) <= "100100000000";
+						blockGrid(activeBlock(0) + 1)(activeBlock(1)) <= redVec;
 					end if;
+					blockGrid(activeBlock(0))(activeBlock(1)) <= zeros;
 					activeBlock(0) <= activeBlock(0) + 1;
 					sCounter <= sCounter + 1;
 					state <= sWaitRightUp;
+					
+					
+				when sMoveUp =>
+					stateAddress <= "0101";
+					if blockGrid(activeBlock(0))(activeBlock(1) - 1) /= zeros then
+						blockGrid(activeBlock(0))(activeBlock(1) - 1) <= blueVec;
+					else
+						blockGrid(activeBlock(0))(activeBlock(1) - 1) <= redVec;
+					end if;
+					blockGrid(activeBlock(0))(activeBlock(1)) <= zeros;
+					activeBlock(1) <= activeBlock(1) - 1;
+					sCounter <= sCounter + 1;
+					state <= sWaitUp;
+					
+					
 				when sWaitLeftUp =>
-					if sCounter(25) = '1' then
+					stateAddress <= "0110";
+					if sCounter(fallSpeed) = '1' then
 						state <= sStepDownLeft;
 					elsif shiftLeftBtn = '1' then
 						sCounter <= sCounter + 1;
@@ -173,8 +220,11 @@ begin
 						sCounter <= sCounter + 1;
 						state <= sWaitLeftUp;
 					end if;
+					
+					
 				when sWaitRightUp =>
-					if sCounter(25) = '1' then
+					stateAddress <= "0111";
+					if sCounter(fallSpeed) = '1' then
 						state <= sStepDownRight;
 					elsif shiftRightBtn = '1' then
 						sCounter <= sCounter + 1;
@@ -183,35 +233,76 @@ begin
 						sCounter <= sCounter + 1;
 						state <= sWaitRightUp;
 					end if;
+					
+					
+				when sWaitUp =>
+					stateAddress <= "1000";
+					if sCounter(fallSpeed) = '1' then
+						state <= sStepDownUp;
+					elsif up = '1' then
+						sCounter <= sCounter + 1;
+						state <= sCount;
+					else 
+						sCounter <= sCounter + 1;
+						state <= sWaitUp;
+					end if;
+					
+					
 				when sStepDownLeft =>
+					stateAddress <= "1001";
 					sCounter <= "0000000000000000000000000000";
 					if blockGrid(activeBlock(0))(activeBlock(1) + 1) /= zeros then
-						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= "000000001001";
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= blueVec;
 					else
-						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= "100100000000";
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= redVec;
 					end if;
+					blockGrid(activeBlock(0))(activeBlock(1)) <= zeros;
 					activeBlock(1) <= activeBlock(1) + 1;
 					if shiftLeftBtn = '1' then
 						state <= sCount;
 					else
 						state <= sWaitLeftUp;
 					end if;
+					
+					
 				when sStepDownRight =>
+					stateAddress <= "1010";
 					sCounter <= "0000000000000000000000000000";
 					if blockGrid(activeBlock(0))(activeBlock(1) + 1) /= zeros then
-						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= "000000001001";
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= blueVec;
 					else
-						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= "100100000000";
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= redVec;
 					end if;
+					blockGrid(activeBlock(0))(activeBlock(1)) <= zeros;
 					activeBlock(1) <= activeBlock(1) + 1;
 					if shiftRightBtn = '1' then
 						state <= sCount;
 					else
 						state <= sWaitRightUp;
 					end if;
+					
+					
+				when sStepDownUp =>
+					stateAddress <= "1011";
+					sCounter <= "0000000000000000000000000000";
+					if blockGrid(activeBlock(0))(activeBlock(1) + 1) /= zeros then
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= blueVec;
+					else
+						blockGrid(activeBlock(0))(activeBlock(1) + 1) <= redVec;
+					end if;
+					blockGrid(activeBlock(0))(activeBlock(1)) <= zeros;
+					activeBlock(1) <= activeBlock(1) + 1;
+					if up = '1' then
+						state <= sCount;
+					else
+						state <= sWaitUp;
+					end if;
+					
+					
 				when others =>
+					stateAddress <= "1111";
 					sWaitCounter <= "0000000000000000000000000000";
-					state <= sStart;
+					--state <= sStart;
 			end case;
 		end if;
 	end process;
@@ -229,11 +320,11 @@ begin
 				greenOut <= "0000";	
 				
 				-- on for border
-				if column = 0 or column = 639 or row = 0 or row = 479 then
-					blueOut <= "1001";
+				--if column = 0 or column = 639 or row = 0 or row = 479 then
+				--	blueOut <= "1001";
 				--else 
 
-				end if;
+				--end if;
 
 				-- turn valid blocks on
 				for i in 0 to blockWidth loop
