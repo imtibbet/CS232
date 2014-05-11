@@ -2,8 +2,49 @@ h1. Final Project - VGA Space Game Framework
 
 h3. Problem description
 
+We set out to design a circuit to drive a VGA monitor, then use that circuit to
+create a game, which we originally intended to be Tetris-like.
+
 h3. Design 
+
+Our VGA component uses a 25 MHz clock, which we got by halving the 50 MHz clock
+on the board by watching the first bit of a counter incremented on the 50 MHz
+clock. The clock speed was very important to allow our state machine to sync
+with the actual screen updating for things like the vertical and horizontal
+sync signals. As a design choice we kept all of the color enabling and setting
+signals in the top level and out of the VGA component.
+
+Our game design started by setting up a border and a grid of blocks so that we 
+didn't always have to be dealing directly with pixels. Our grid of blocks is 
+defined by a 2D array of 12 bit vectors, 4 bits for each of red, green, and blue.
+We have a process sensitive to each pixel (column, row) that assigns the color
+output signals to the appropriate bits of the matching block. Our game state 
+machine then only had to keep track of a pair of integers to track a block in
+the grid.
+
+We track an active block and allow the user to move it left, right, and up using
+button presses on the board. We also move the active block down at a constant 
+rate (gravity), and our state machine takes care of undrawing the previous block 
+and identifying the case where the block being moved to is not black, which we 
+distinguish by drawing the active block a different color for a collision. This
+framework could be extended to implement a Tetris-like game, but we went in a 
+different direction.
+
+We implemented a pseudo-random vector with the same number of bits as the
+block width of the screen using a feedback polynomial implementation from one of
+our previous projects. This runs continually and we sample it every time the 
+player falls, when we move the entire map down one and populate the top row with
+blocks matching the random vector. The density of the random vector can be
+adjusted by changing the constant polynomial. Though we didn't complete a full
+game, our design is extendable to any number of games, including a rocket game
+where collisions cause hull damage and the speed of the falling effect can
+increase periodically. The lose condition could be falling into the bottom row
+or taking too much hull damage. The possibilities are endless.
 
 h3. Test your circuit. Include a video
 
+Can you do this Ryan?
+
 h3. Description, and pictures, of any extensions
+
+Did we do any extensions?
